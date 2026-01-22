@@ -16,6 +16,13 @@ public class ChessPiece {
     private final ChessGame.TeamColor pieceColor;
     private final PieceType type;
 
+
+
+
+
+
+
+
     public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
@@ -59,43 +66,70 @@ public class ChessPiece {
 
 
 
-    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        ChessPiece piece = board.getPiece(myPosition);
 
-        List<String> list_diagonal = new ArrayList<>();
-        boolean inside_checker(piece.myPosition){
+
+
+
+
+
+    //my_first_creation:  diagonal_moves function:
+
+    private List<ChessPosition> Diagnoal_move_checker(ChessBoard board, ChessPosition next_position){
+        ChessPiece target = board.getPiece(next_position);
+        List<ChessPosition> list_diagonal = new ArrayList<>();
+
+        int Row =next_position.getRow();
+        int Col =next_position.getColumn();
+
+        for (int i=1; i<8; i++){
+
+
+            ChessPosition grow_pos = new ChessPosition(Row+i,Col+i)
             //this inside_checker will kill all invalid moves before it slip in to move_lists.
 
-        //boundary check
-            if (myPosition.getRow()>=9  |  myPosition.getColumn()>=9 |
-                myPosition.getRow()<=0  |  myPosition.getColumn()>=9 ){
-                return false;
+            //boundary check
+            if (Row>=9  ||  Col>=9 ||
+                    Row<=0  ||  Col<=0 ){
+                break;
+            }
+            //BLOCKED BY ALLEY (arrest me before you add!)
+            if (board.getPiece(grow_pos)!= null && target.getTeamColor() ==this.getTeamColor()){
+                break;
+            };
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            list_diagonal.add(grow_pos);
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //blocked by enemy (arrest me after you add!)
+            if (board.getPiece(grow_pos)!= null && target.getTeamColor()!=this.getTeamColor()){
+                break;
+            };
             }
 
-        //blocked by enemy (arrest me after you add!)
-            if (board.getPiece(myPosition)!= null && piece.getTeamColor()!=this.getTeamColor()){
-                return false;
-            };
 
-        //BLOCKED BY ALLEY (arrest me before you add!)
-            if (board.getPiece(myPosition)!= null && piece.getTeamColor()!=this.getTeamColor()){
-                return false;
-            };
 
-        }
 
-        for (int i=0; i<8; i++){
 
-            for (int j=0; j<8; j++){
 
-                if ChessPiece(i,j)
-            }
 
-        }
+
+
+
+
+
+
+
+
+
+
+
+            public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+        ChessPiece piece = board.getPiece(myPosition);
 
 
         if(piece.getPieceType() == PieceType.BISHOP){
-            return   List.of(new ChessMove(new ChessPosition(5,4), new ChessPosition(1,8),null));
+            return   List.of(new ChessMove(new ChessPosition(5,4), new ChessPosition(1,8),null),
+                             new ChessMove(new ChessPosition(6,7), new ChessPosition(1,8),null)
+                    );
         }
         return List.of();
     }
