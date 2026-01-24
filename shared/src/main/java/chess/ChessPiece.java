@@ -2,6 +2,7 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -19,6 +20,25 @@ public class ChessPiece {
     public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
+    }
+
+
+
+    @Override
+    public boolean equals(Object o){ /////////////////////////////////////Object VS Objects
+        if(this == o) return true;
+
+        if(o == null) return false;
+
+        if(getClass() !=o.getClass()) return false;
+
+        ChessPiece that = (ChessPiece) o;
+
+        return this.pieceColor == that.pieceColor && this.type == that.type;
+    }
+    @Override
+    public int hashCode(){
+        return Objects.hash(pieceColor, type);
     }
 
     /**
@@ -44,10 +64,6 @@ public class ChessPiece {
      * @return which type of chess piece this piece is
      */
     public PieceType getPieceType() {
-        if(this ==null){
-            return null;
-        }
-
         return this.type;
     }
 
@@ -511,9 +527,88 @@ private List<ChessMove> KING_HELPER(ChessBoard board, int row, int col){
 
 
 
+/// /////////////////////////////////////////////////////////////////////////////////////////////////
+private List<ChessMove> PAWN_HELPER(ChessBoard board, int row, int col) {
+    List<ChessMove> LIST_PAWN = new ArrayList<>();
+    ChessPosition start_pos = new ChessPosition(row, col);
+
+    boolean IS_WHITE = (this.getTeamColor() == ChessGame.TeamColor.WHITE);
+    //oppsite site
+    int DIR = IS_WHITE ? 1 : -1;
+    int START_ROW = IS_WHITE ? 2 : 7;
+    int PROMOTE_ROW = IS_WHITE ? 8 : 1;
+
+    int R, C;
+
+    R = row + DIR;
+    C = col;
+    if (!(R >= 9 || C >= 9 || R <= 0 || C <= 0)) {
+        ChessPosition pos = new ChessPosition(R, C);
+        ChessPiece target = board.getPiece(pos);
+        if (target == null) {//
+            if (R == PROMOTE_ROW) {
+                LIST_PAWN.add(new ChessMove(start_pos, pos, PieceType.QUEEN));
+                LIST_PAWN.add(new ChessMove(start_pos, pos, PieceType.ROOK));
+                LIST_PAWN.add(new ChessMove(start_pos, pos, PieceType.BISHOP));
+                LIST_PAWN.add(new ChessMove(start_pos, pos, PieceType.KNIGHT));
+            } else {
+                LIST_PAWN.add(new ChessMove(start_pos, pos, null));
+            }
+        }
+    }
+
+    if (row == START_ROW) {
+        int R1 = row + DIR;
+        int R2 = row + 2 * DIR;
+        if (!(R2 >= 9 || col >= 9 || R2 <= 0 || col <= 0)) {
+            ChessPosition mid = new ChessPosition(R1, col);
+            ChessPosition end = new ChessPosition(R2, col);
+            if (board.getPiece(mid) == null && board.getPiece(end) == null) {
+                LIST_PAWN.add(new ChessMove(start_pos, end, null));
+            }
+        }
+    }
 
 
+//eat
+    R = row + DIR;
+    C = col - 1;
+    if (!(R >= 9 || C >= 9 || R <= 0 || C <= 0)) {
+        ChessPosition pos = new ChessPosition(R, C);
+        ChessPiece target = board.getPiece(pos);
+        if (target != null && target.getTeamColor() != this.getTeamColor()) {
+            if (R == PROMOTE_ROW) {
+                LIST_PAWN.add(new ChessMove(start_pos, pos, PieceType.QUEEN));
+                LIST_PAWN.add(new ChessMove(start_pos, pos, PieceType.ROOK));
+                LIST_PAWN.add(new ChessMove(start_pos, pos, PieceType.BISHOP));
+                LIST_PAWN.add(new ChessMove(start_pos, pos, PieceType.KNIGHT));
+            } else {
+                LIST_PAWN.add(new ChessMove(start_pos, pos, null));
+            }
+        }
+    }
 
+
+//eat
+    R = row + DIR;
+    C = col + 1;
+    if (!(R >= 9 || C >= 9 || R <= 0 || C <= 0)) {
+        ChessPosition pos = new ChessPosition(R, C);
+        ChessPiece target = board.getPiece(pos);
+        if (target != null && target.getTeamColor() != this.getTeamColor()) {
+            if (R == PROMOTE_ROW) {
+                LIST_PAWN.add(new ChessMove(start_pos, pos, PieceType.QUEEN));
+                LIST_PAWN.add(new ChessMove(start_pos, pos, PieceType.ROOK));
+                LIST_PAWN.add(new ChessMove(start_pos, pos, PieceType.BISHOP));
+                LIST_PAWN.add(new ChessMove(start_pos, pos, PieceType.KNIGHT));
+            } else {
+                LIST_PAWN.add(new ChessMove(start_pos, pos, null));
+            }
+        }
+    }
+
+    return LIST_PAWN;
+}
 
 
 
@@ -542,6 +637,10 @@ private List<ChessMove> KING_HELPER(ChessBoard board, int row, int col){
             return   QUEEN_MOVES;
         }
 
+        if(piece.getPieceType()==PieceType.ROOK){
+            return straight_move_helper(board, row, col);
+        }
+
 
         if(piece.getPieceType() == PieceType.KNIGHT){
             return  KNIGHT_HELPER(board, row, col);
@@ -553,6 +652,12 @@ private List<ChessMove> KING_HELPER(ChessBoard board, int row, int col){
         }
 
 
+        if(piece.getPieceType() == PieceType.PAWN){
+            return PAWN_HELPER(board, row, col);
+        }
+
+
+
 
 
 
@@ -560,4 +665,7 @@ private List<ChessMove> KING_HELPER(ChessBoard board, int row, int col){
 
             return List.of();
     }
+
 }
+
+
