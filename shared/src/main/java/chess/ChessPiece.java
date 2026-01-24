@@ -16,13 +16,6 @@ public class ChessPiece {
     private final ChessGame.TeamColor pieceColor;
     private final PieceType type;
 
-
-
-
-
-
-
-
     public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
@@ -51,6 +44,9 @@ public class ChessPiece {
      * @return which type of chess piece this piece is
      */
     public PieceType getPieceType() {
+        if(this ==null){
+            return null;
+        }
 
         return this.type;
     }
@@ -74,44 +70,231 @@ public class ChessPiece {
 
     //my_first_creation:  diagonal_moves function:
 
-    private List<ChessPosition> Diagnoal_move_checker(ChessBoard board, ChessPosition next_position) {
+    private List<ChessMove> diagonal_move_helper(ChessBoard board, int row, int col) {
         ChessPiece target;
-        List<ChessPosition> list_diagonal = new ArrayList<>();
+        List<ChessMove> list_diagonal = new ArrayList<>();
+        ChessPosition start_pos = new ChessPosition(row, col);
+        int R,C;
 
-        int Row = next_position.getRow();
-        int Col = next_position.getColumn();
 
+        //   row-i, col+i
         for (int i = 1; i < 8; i++) {
-            int R = Row + i;
-            int C = Col + i;
+            R = row - i;
+            C = col + i;
             //this inside_checker will kill all invalid moves before it slip in to move_lists.
             //boundary check
             if (R >= 9 || C >= 9 ||
                     R <= 0 || C <= 0) {
                 break;
             }
-
-            ChessPosition grow_pos = new ChessPosition(R, C);
-            target = board.getPiece(grow_pos);
-
-
+            ChessPosition pos = new ChessPosition(R,C);
+            target = board.getPiece(pos);
             //BLOCKED BY ALLEY (arrest me before you add!)
             if (target != null && target.getTeamColor() == this.getTeamColor()) {
                 break;
             }
-
-            list_diagonal.add(grow_pos);
-
+            list_diagonal.add(new ChessMove(start_pos,pos,null));
             //blocked by enemy (arrest me after you add!)
             if (target != null && target.getTeamColor() != this.getTeamColor()) {
                 break;
             }
         }
+
+//   row+i, col+i
+        for (int i = 1; i < 8; i++) {
+            R = row + i;
+            C = col + i;
+            //this inside_checker will kill all invalid moves before it slip in to move_lists.
+            //boundary check
+            if (R >= 9 || C >= 9 ||
+                    R <= 0 || C <= 0) {
+                break;
+            }
+            ChessPosition pos = new ChessPosition(R,C);
+            target = board.getPiece(pos);
+            //BLOCKED BY ALLEY (arrest me before you add!)
+            if (target != null && target.getTeamColor() == this.getTeamColor()) {
+                break;
+            }
+            list_diagonal.add(new ChessMove(start_pos,pos,null));
+            //blocked by enemy (arrest me after you add!)
+            if (target != null && target.getTeamColor() != this.getTeamColor()) {
+                break;
+            }
+        }
+
+
+
+
+        //   row-i, col-i
+        for (int i = 1; i < 8; i++) {
+            R = row - i;
+            C = col - i;
+            //this inside_checker will kill all invalid moves before it slip in to move_lists.
+            //boundary check
+            if (R >= 9 || C >= 9 ||
+                    R <= 0 || C <= 0) {
+                break;
+            }
+            ChessPosition pos = new ChessPosition(R,C);
+            target = board.getPiece(pos);
+            //BLOCKED BY ALLEY (arrest me before you add!)
+            if (target != null && target.getTeamColor() == this.getTeamColor()) {
+                break;
+            }
+            list_diagonal.add(new ChessMove(start_pos,pos,null));
+            //blocked by enemy (arrest me after you add!)
+            if (target != null && target.getTeamColor() != this.getTeamColor()) {
+                break;
+            }
+        }
+
+
+
+//   row+i, col-i
+        for (int i = 1; i < 8; i++) {
+            R = row + i;
+            C = col - i;
+            //this inside_checker will kill all invalid moves before it slip in to move_lists.
+            //boundary check
+            if (R >= 9 || C >= 9 ||
+                    R <= 0 || C <= 0) {
+                break;
+            }
+            ChessPosition pos = new ChessPosition(R,C);
+            target = board.getPiece(pos);
+            //BLOCKED BY ALLEY (arrest me before you add!)
+            if (target != null && target.getTeamColor() == this.getTeamColor()) {
+                break;
+            }
+            list_diagonal.add(new ChessMove(start_pos,pos,null));
+            //blocked by enemy (arrest me after you add!)
+            if (target != null && target.getTeamColor() != this.getTeamColor()) {
+                break;
+            }
+        }
+
         return list_diagonal;
     }
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private List<ChessMove> straight_move_helper(ChessBoard board, int row, int col) {
+        ChessPiece target;
+        List<ChessMove> list_straight = new ArrayList<>();
+        ChessPosition start_pos = new ChessPosition(row, col);
+        int R,C;
+
+        //   row-i, col+0
+        for (int i = 1; i < 8; i++) {
+            R = row - i;
+            C = col;
+            //this inside_checker will kill all invalid moves before it slip in to move_lists.
+            //boundary check
+            if (R >= 9 || C >= 9 ||
+                    R <= 0 || C <= 0) {
+                break;
+            }
+            ChessPosition pos = new ChessPosition(R,C);
+            target = board.getPiece(pos);
+            //BLOCKED BY ALLEY (arrest me before you add!)
+            if (target != null && target.getTeamColor() == this.getTeamColor()) {
+                break;
+            }
+            list_straight.add(new ChessMove(start_pos,pos,null));
+            //blocked by enemy (arrest me after you add!)
+            if (target != null && target.getTeamColor() != this.getTeamColor()) {
+                break;
+            }
+        }
+
+//   row, col+i
+        for (int i = 1; i < 8; i++) {
+            R = row;
+            C = col + i;
+            //this inside_checker will kill all invalid moves before it slip in to move_lists.
+            //boundary check
+            if (R >= 9 || C >= 9 ||
+                    R <= 0 || C <= 0) {
+                break;
+            }
+            ChessPosition pos = new ChessPosition(R,C);
+            target = board.getPiece(pos);
+            //BLOCKED BY ALLEY (arrest me before you add!)
+            if (target != null && target.getTeamColor() == this.getTeamColor()) {
+                break;
+            }
+            list_straight.add(new ChessMove(start_pos,pos,null));
+            //blocked by enemy (arrest me after you add!)
+            if (target != null && target.getTeamColor() != this.getTeamColor()) {
+                break;
+            }
+        }
+
+        //   row+i, col
+        for (int i = 1; i < 8; i++) {
+            R = row + i;
+            C = col;
+            //this inside_checker will kill all invalid moves before it slip in to move_lists.
+            //boundary check
+            if (R >= 9 || C >= 9 ||
+                    R <= 0 || C <= 0) {
+                break;
+            }
+            ChessPosition pos = new ChessPosition(R,C);
+            target = board.getPiece(pos);
+            //BLOCKED BY ALLEY (arrest me before you add!)
+            if (target != null && target.getTeamColor() == this.getTeamColor()) {
+                break;
+            }
+            list_straight.add(new ChessMove(start_pos,pos,null));
+            //blocked by enemy (arrest me after you add!)
+            if (target != null && target.getTeamColor() != this.getTeamColor()) {
+                break;
+            }
+        }
+
+
+
+//   row, col-i
+        for (int i = 1; i < 8; i++) {
+            R = row;
+            C = col - i;
+            //this inside_checker will kill all invalid moves before it slip in to move_lists.
+            //boundary check
+            if (R >= 9 || C >= 9 ||
+                    R <= 0 || C <= 0) {
+                break;
+            }
+            ChessPosition pos = new ChessPosition(R,C);
+            target = board.getPiece(pos);
+            //BLOCKED BY ALLEY (arrest me before you add!)
+            if (target != null && target.getTeamColor() == this.getTeamColor()) {
+                break;
+            }
+            list_straight.add(new ChessMove(start_pos,pos,null));
+            //blocked by enemy (arrest me after you add!)
+            if (target != null && target.getTeamColor() != this.getTeamColor()) {
+                break;
+            }
+        }
+
+        return list_straight;
+    }
 
 
 
@@ -341,15 +524,24 @@ private List<ChessMove> KING_HELPER(ChessBoard board, int row, int col){
 
         public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         ChessPiece piece = board.getPiece(myPosition);
+        if(piece==null){
+            return List.of();
+        }
         int row =  myPosition.getRow();
         int col = myPosition.getColumn();
 
 
         if(piece.getPieceType() == PieceType.BISHOP){
-            return   List.of(new ChessMove(new ChessPosition(5,4), new ChessPosition(1,8),null),
-                             new ChessMove(new ChessPosition(6,7), new ChessPosition(1,8),null)
-                    );
+            return   diagonal_move_helper(board, row, col);
         }
+
+        if(piece.getPieceType() == PieceType.QUEEN){
+            List<ChessMove> QUEEN_MOVES = new ArrayList<>();
+            QUEEN_MOVES.addAll(diagonal_move_helper(board, row, col));
+            QUEEN_MOVES.addAll(straight_move_helper(board, row, col));
+            return   QUEEN_MOVES;
+        }
+
 
         if(piece.getPieceType() == PieceType.KNIGHT){
             return  KNIGHT_HELPER(board, row, col);
