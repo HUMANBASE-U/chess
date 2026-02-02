@@ -12,35 +12,12 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessPiece {
-
-
     private final ChessGame.TeamColor pieceColor;
     private final PieceType type;
-
     public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
     }
-
-
-
-    @Override
-    public boolean equals(Object o){ /////////////////////////////////////Object VS Objects
-        if(this == o) return true;
-
-        if(o == null) return false;
-
-        if(getClass() !=o.getClass()) return false;
-
-        ChessPiece that = (ChessPiece) o;
-
-        return this.pieceColor == that.pieceColor && this.type == that.type;
-    }
-    @Override
-    public int hashCode(){
-        return Objects.hash(pieceColor, type);
-    }
-
     /**
      * The various different chess piece options
      */
@@ -74,13 +51,6 @@ public class ChessPiece {
      *
      * @return Collection of valid moves
      */
-
-
-
-
-
-
-
 
 
 
@@ -197,18 +167,6 @@ public class ChessPiece {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
     private List<ChessMove> straight_move_helper(ChessBoard board, int row, int col) {
         ChessPiece target;
         List<ChessMove> list_straight = new ArrayList<>();
@@ -316,13 +274,6 @@ public class ChessPiece {
 
 
 
-
-
-
-
-
-
-
 //////////////////////////////////UNDER CONSTRUCTION//////////////////////////////////////////////
     private List<ChessMove> KNIGHT_HELPER(ChessBoard board, int row, int col){
     List<ChessMove> LIST_KNIGHT= new ArrayList<>();
@@ -413,13 +364,6 @@ public class ChessPiece {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 }
-
-
-
-
-
-
-
 
 
 
@@ -612,11 +556,6 @@ private List<ChessMove> PAWN_HELPER(ChessBoard board, int row, int col) {
 
 
 
-
-
-
-
-
         public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         ChessPiece piece = board.getPiece(myPosition);
         if(piece==null){
@@ -656,15 +595,27 @@ private List<ChessMove> PAWN_HELPER(ChessBoard board, int row, int col) {
             return PAWN_HELPER(board, row, col);
         }
 
-
-
-
-
-
-
-
             return List.of();
     }
+
+
+    @Override
+    public boolean equals(Object o){ /////////////////////////////////////Object VS Objects
+        if(this == o) return true;
+
+        if(o == null) return false;
+
+        if(getClass() !=o.getClass()) return false;
+
+        ChessPiece that = (ChessPiece) o;
+
+        return this.pieceColor == that.pieceColor && this.type == that.type;
+    }
+    @Override
+    public int hashCode(){
+        return Objects.hash(pieceColor, type);
+    }
+
 
 }
 
