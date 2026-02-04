@@ -14,6 +14,14 @@ import java.util.Objects;
 public class ChessGame {
     private  ChessBoard board;
     private TeamColor team_turn;
+    //////////////////////////castling, do not generate hashcode again/////////////////
+    private boolean blackKingMoved;
+    private boolean blackLeftRookMoved;
+    private boolean blackRightRookMoved;
+
+    private boolean whiteKingMoved;
+    private boolean whiteLeftRookMoved;
+    private boolean whiteRightRookMoved;
 
     public ChessGame() {
         board = new ChessBoard();
