@@ -468,6 +468,103 @@ private List<ChessMove> KING_HELPER(ChessBoard board, int row, int col){
     return KING_LIST;
 }
 
+private List<ChessMove> Castling_HELPER(ChessBoard board, int row, int col){
+        List<ChessMove> KING_LIST= new ArrayList<>();
+        ChessPosition start_pos = new ChessPosition(row,col);
+        int R,C;
+
+        R=row-1;
+        C=col+1;
+        if(!(R >= 9 || C >= 9 || R <= 0 || C <= 0)){
+            ChessPosition pos = new ChessPosition(R,C);
+            ChessPiece target = board.getPiece(pos);
+            ChessMove KING_MOVE=new ChessMove(start_pos,pos,null);
+
+            if(target==null || target.getTeamColor()!=this.getTeamColor()) {
+                KING_LIST.add(KING_MOVE);
+            }
+        }
+
+        R=row+0;
+        C=col+1;
+        if(!(R >= 9 || C >= 9 || R <= 0 || C <= 0)){
+            ChessPosition pos = new ChessPosition(R,C);
+            ChessPiece target = board.getPiece(pos);
+            ChessMove KING_MOVE=new ChessMove(start_pos,pos,null);
+
+            if(target==null || target.getTeamColor()!=this.getTeamColor()) {
+                KING_LIST.add(KING_MOVE);
+            }
+        }
+        R=row+1;
+        C=col+1;
+        if(!(R >= 9 || C >= 9 || R <= 0 || C <= 0)){
+            ChessPosition pos = new ChessPosition(R,C);
+            ChessPiece target = board.getPiece(pos);
+            ChessMove KING_MOVE=new ChessMove(start_pos,pos,null);
+
+            if(target==null || target.getTeamColor()!=this.getTeamColor()) {
+                KING_LIST.add(KING_MOVE);
+            }
+        }
+        R=row-1;
+        C=col+0;
+        if(!(R >= 9 || C >= 9 || R <= 0 || C <= 0)){
+            ChessPosition pos = new ChessPosition(R,C);
+            ChessPiece target = board.getPiece(pos);
+            ChessMove KING_MOVE=new ChessMove(start_pos,pos,null);
+
+            if(target==null || target.getTeamColor()!=this.getTeamColor()) {
+                KING_LIST.add(KING_MOVE);
+            }
+        }
+        R=row+1;
+        C=col+0;
+        if(!(R >= 9 || C >= 9 || R <= 0 || C <= 0)){
+            ChessPosition pos = new ChessPosition(R,C);
+            ChessPiece target = board.getPiece(pos);
+            ChessMove KING_MOVE=new ChessMove(start_pos,pos,null);
+
+            if(target==null || target.getTeamColor()!=this.getTeamColor()) {
+                KING_LIST.add(KING_MOVE);
+            }
+        }
+        R=row-1;
+        C=col-1;
+
+        if(!(R >= 9 || C >= 9 || R <= 0 || C <= 0)){
+            ChessPosition pos = new ChessPosition(R,C);
+            ChessPiece target = board.getPiece(pos);
+            ChessMove KING_MOVE=new ChessMove(start_pos,pos,null);
+
+            if(target==null || target.getTeamColor()!=this.getTeamColor()) {
+                KING_LIST.add(KING_MOVE);
+            }
+        }
+        R=row+0;
+        C=col-1;
+        if(!(R >= 9 || C >= 9 || R <= 0 || C <= 0)){
+            ChessPosition pos = new ChessPosition(R,C);
+            ChessPiece target = board.getPiece(pos);
+            ChessMove KING_MOVE=new ChessMove(start_pos,pos,null);
+
+            if(target==null || target.getTeamColor()!=this.getTeamColor()) {
+                KING_LIST.add(KING_MOVE);
+            }
+        }
+        R=row+1;
+        C=col-1;
+        if(!(R >= 9 || C >= 9 || R <= 0 || C <= 0)){
+            ChessPosition pos = new ChessPosition(R,C);
+            ChessPiece target = board.getPiece(pos);
+            ChessMove KING_MOVE=new ChessMove(start_pos,pos,null);
+
+            if(target==null || target.getTeamColor()!=this.getTeamColor()) {
+                KING_LIST.add(KING_MOVE);
+            }
+        }
+        return KING_LIST;
+    }
 
 
 

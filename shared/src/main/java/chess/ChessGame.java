@@ -141,6 +141,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
+        if(!isInCheck(teamColor)) return false;  // have to be in danger first
         for(int i=1; i<=8; i++){
             for(int j=1; j<=8; j++){
                 ChessPosition target_pos = new ChessPosition(i, j);
