@@ -145,7 +145,7 @@ public class ChessGame {
             for(int j=1; j<=8; j++){
                 ChessPosition target_pos = new ChessPosition(i, j);
                 ChessPiece target = board.getPiece(target_pos);
-                if(target!=null && target.getTeamColor()==teamColor && validMoves(target_pos)!=null) return false;
+                if(target!=null && target.getTeamColor()==teamColor && !validMoves(target_pos).isEmpty()) return false;
             }//if you are an alley and you do have some moves , return false;
         }
         return true;
@@ -159,11 +159,12 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
+        if(isInCheck(teamColor)) return false;
         for(int i=1; i<=8; i++){
             for(int j=1; j<=8; j++){
                 ChessPosition target_pos = new ChessPosition(i, j);
                 ChessPiece target = board.getPiece(target_pos);
-                if(target!=null && target.getTeamColor()==teamColor && validMoves(target_pos)!=null) return false;
+                if(target!=null && target.getTeamColor()==teamColor && !validMoves(target_pos).isEmpty()) return false;
             }//if you are an alley and you do have some moves , return false;
         }
         return true;
