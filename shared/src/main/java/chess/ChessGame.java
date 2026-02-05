@@ -22,6 +22,8 @@ public class ChessGame {
     private boolean whiteKingMoved;
     private boolean whiteLeftRookMoved;
     private boolean whiteRightRookMoved;
+    private ChessPosition castlingRookPos;
+    private ChessPosition besidesKingPos;
 
     public ChessGame() {
         board = new ChessBoard();
@@ -60,6 +62,12 @@ public class ChessGame {
      * @return Set of valid moves for requested piece, or null if no piece at
      * startPosition
      */
+    public boolean leftIsEmpty(int row){
+        return false;
+    }
+    //这个函数会检查王车之间是不是都是空位
+
+
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece target = board.getPiece(startPosition);
         Collection<ChessMove> posible_move = new ArrayList<>();
@@ -68,16 +76,70 @@ public class ChessGame {
             return List.of();
         }
         posible_move = target.pieceMoves(board, startPosition);
+        /// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // R O W
+        ChessPiece King = board.getPiece(startPosition);
+        int left_row = startPosition.getRow();
+        TeamColor color = King.getTeamColor();
+        Boolean leftKingMoved = (color == TeamColor.WHITE)? whiteKingMoved:blackKingMoved;
+        Boolean leftRookMoved = (color == TeamColor.WHITE)? whiteKingMoved:blackKingMoved;
 
+        /// ///////////////////////////////////////////////////////////////////////////////////////////
+        //before detect the validity, let me check if you are a king
+        if(target.getPieceType() == ChessPiece.PieceType.KING && !isInCheck(color)){
+                if(!whiteKingMoved && !whiteLeftRookMoved && leftIsEmpty(left_row)){
+                    board.addPiece(new ChessPosition(left_row,4), King);   //AAA
+                    board.deletePiece(new ChessPosition(left_row,5));// delete old king                                        //
+                    if(!isInCheck(color)){
+                        board.addPiece(new ChessPosition(left_row, 3), King);                    //BBB
+                        board.deletePiece(new ChessPosition(left_row,4));// delete old king         //AAA
+                        if(!isInCheck(color)){
+                            //if second place is still not threatened
+                            //reset the board
+                            board.addPiece(startPosition, King);
+                            board.deletePiece(new ChessPosition(left_row, 3));// delete old king                                          //BBB
+                            posible_move.add(new ChessMove(startPosition, new ChessPosition(left_row,3), null));//add the numberTwo_block move to king_list
+                        }
+                    }
+                }
+        }
+
+/// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        // R O W
+        left_row = 1;
+        /// ///////////////////////////////////////////////////////////////////////////////////////////
+        //before detect the validity, let me check if you are a king
+        if(target.getPieceType() == ChessPiece.PieceType.KING && !isInCheck(color)){
+            if(!whiteKingMoved && !whiteLeftRookMoved && leftIsEmpty(left_row)){
+                board.addPiece(new ChessPosition(left_row,4), King);   //AAA
+                board.deletePiece(new ChessPosition(left_row,5));// delete old king                                        //
+                if(!isInCheck(color)){
+                    board.addPiece(new ChessPosition(left_row, 3), King);                    //BBB
+                    board.deletePiece(new ChessPosition(left_row,4));// delete old king         //AAA
+                    if(!isInCheck(color)){
+                        //if second place is still not threatened
+                        //reset the board
+                        board.addPiece(startPosition, King);
+                        board.deletePiece(new ChessPosition(left_row, 3));// delete old king                                          //BBB
+                        posible_move.add(new ChessMove(startPosition, new ChessPosition(left_row,3), null));//add the numberTwo_block move to king_list
+                    }
+                }
+            }
+        }
+
+/// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         for(ChessMove move : posible_move){
             ChessPiece possible_enemy = board.getPiece(move.getEndPosition());
 
             board.addPiece(move.getEndPosition(),target);
-            board.del_Piece(move.getStartPosition());
+            board.deletePiece(move.getStartPosition());
             if(!isInCheck(target.getTeamColor())) valid_list.add(move);//未改BUG：未升变的兵，虽然是模拟但可能出错
             board.addPiece(move.getStartPosition(),target);// BUG 先加再删
             board.addPiece(move.getEndPosition(), possible_enemy);
         }
+
         return valid_list;
     }
 
@@ -97,7 +159,13 @@ public class ChessGame {
         if(move.getPromotionPiece()!=null){
             board.addPiece(move.getEndPosition(), new ChessPiece(target.getTeamColor(), move.getPromotionPiece()));
         }else board.addPiece(move.getEndPosition(), target);
-        board.del_Piece(move.getStartPosition());
+        board.deletePiece(move.getStartPosition());
+        /// ////////////////////////////////IF CASTLING//////////////////////////////////////////////
+        if(target.getPieceType() == ChessPiece.PieceType.KING && Math.abs(move.getStartPosition().getColumn()-move.getEndPosition().getColumn())==2){
+            ChessPiece ROOK = board.getPiece(castlingRookPos);
+            board.addPiece(besidesKingPos, ROOK);
+            board.deletePiece(castlingRookPos);
+        }
         team_turn = target.getTeamColor()==TeamColor.WHITE ?TeamColor.BLACK: TeamColor.WHITE;
     }
 
