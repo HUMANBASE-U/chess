@@ -109,7 +109,13 @@ public class ChessGame {
                             board.addPiece(startPosition, King);
                             board.deletePiece(new ChessPosition(left_row, 3));// delete old king                                          //BBB
                             posible_move.add(new ChessMove(startPosition, new ChessPosition(left_row,3), null));//add the numberTwo_block move to king_list
+                        }else {
+                            board.addPiece(startPosition, King);
+                            board.deletePiece(new ChessPosition(left_row,3));
                         }
+                    }else {
+                        board.addPiece(startPosition, King);
+                        board.deletePiece(new ChessPosition(left_row,4));
                     }
                 }
         }
@@ -135,7 +141,13 @@ public class ChessGame {
                         board.addPiece(startPosition, King);
                         board.deletePiece(new ChessPosition(right_row, 7));// delete old king                                          //BBB
                         posible_move.add(new ChessMove(startPosition, new ChessPosition(right_row,7), null));//add the numberTwo_block move to king_list
+                    }else {
+                        board.addPiece(startPosition, King);
+                        board.deletePiece(new ChessPosition(right_row,7));
                     }
+                }else {
+                    board.addPiece(startPosition, King);
+                    board.deletePiece(new ChessPosition(right_row,6));
                 }
             }
         }
