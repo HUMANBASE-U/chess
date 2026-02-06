@@ -22,14 +22,27 @@ public class ChessGame {
     private boolean whiteKingMoved;
     private boolean whiteLeftRookMoved;
     private boolean whiteRightRookMoved;
-    private ChessPosition castlingRookPos;
-    private ChessPosition besidesKingPos;
 
     public ChessGame() {
         board = new ChessBoard();
         board.resetBoard();
         team_turn = TeamColor.WHITE;
     }
+
+    public boolean leftIsEmpty(int row){
+        ChessPiece L1 =board.getPiece( new ChessPosition(row, 2));
+        ChessPiece L2 =board.getPiece( new ChessPosition(row, 3));
+        ChessPiece L3 =board.getPiece( new ChessPosition(row, 4));
+        return (L1==null && L2 == null && L3==null);
+    }
+
+    public boolean rightIsEmpty(int row){
+        ChessPiece R1 =board.getPiece( new ChessPosition(row, 6));
+        ChessPiece R2 =board.getPiece( new ChessPosition(row, 7));
+        return (R1==null && R2 == null);
+    }
+    //这个函数会检查王车之间是不是都是空位
+
 
     /**
      * @return Which team's turn it is
@@ -62,10 +75,6 @@ public class ChessGame {
      * @return Set of valid moves for requested piece, or null if no piece at
      * startPosition
      */
-    public boolean leftIsEmpty(int row){
-        return false;
-    }
-    //这个函数会检查王车之间是不是都是空位
 
 
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
@@ -76,18 +85,19 @@ public class ChessGame {
             return List.of();
         }
         posible_move = target.pieceMoves(board, startPosition);
-        /// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // R O W
-        ChessPiece King = board.getPiece(startPosition);
         int left_row = startPosition.getRow();
+        ChessPiece King = board.getPiece(startPosition);
+        ChessPiece leftRook = board.getPiece(new ChessPosition(left_row,1));
         TeamColor color = King.getTeamColor();
-        Boolean leftKingMoved = (color == TeamColor.WHITE)? whiteKingMoved:blackKingMoved;
-        Boolean leftRookMoved = (color == TeamColor.WHITE)? whiteKingMoved:blackKingMoved;
+        boolean KingMoved = (color == TeamColor.WHITE)? whiteKingMoved:blackKingMoved;
+        boolean leftRookMoved = (color == TeamColor.WHITE)? whiteLeftRookMoved:blackLeftRookMoved;
 
-        /// ///////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////
         //before detect the validity, let me check if you are a king
         if(target.getPieceType() == ChessPiece.PieceType.KING && !isInCheck(color)){
-                if(!whiteKingMoved && !whiteLeftRookMoved && leftIsEmpty(left_row)){
+                if(!KingMoved && !leftRookMoved && leftRook!= null && leftRook.getTeamColor() == color && leftIsEmpty(left_row)){
                     board.addPiece(new ChessPosition(left_row,4), King);   //AAA
                     board.deletePiece(new ChessPosition(left_row,5));// delete old king                                        //
                     if(!isInCheck(color)){
@@ -105,31 +115,37 @@ public class ChessGame {
         }
 
 /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
         // R O W
-        left_row = 1;
-        /// ///////////////////////////////////////////////////////////////////////////////////////////
+        int right_row = startPosition.getRow();
+        ChessPiece rightRook = board.getPiece(new ChessPosition(right_row,8));
+        boolean rightRookMoved = (color == TeamColor.WHITE)? whiteRightRookMoved:blackRightRookMoved;
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
         //before detect the validity, let me check if you are a king
         if(target.getPieceType() == ChessPiece.PieceType.KING && !isInCheck(color)){
-            if(!whiteKingMoved && !whiteLeftRookMoved && leftIsEmpty(left_row)){
-                board.addPiece(new ChessPosition(left_row,4), King);   //AAA
-                board.deletePiece(new ChessPosition(left_row,5));// delete old king                                        //
+            if(!KingMoved && !rightRookMoved && rightRook != null && rightRook.getTeamColor() == color && rightIsEmpty(right_row)){
+                board.addPiece(new ChessPosition(right_row,6), King);   //AAA
+                board.deletePiece(new ChessPosition(right_row,5));// delete old king                                        //
                 if(!isInCheck(color)){
-                    board.addPiece(new ChessPosition(left_row, 3), King);                    //BBB
-                    board.deletePiece(new ChessPosition(left_row,4));// delete old king         //AAA
+                    board.addPiece(new ChessPosition(right_row, 7), King);                    //BBB
+                    board.deletePiece(new ChessPosition(right_row,6));// delete old king         //AAA
                     if(!isInCheck(color)){
                         //if second place is still not threatened
                         //reset the board
                         board.addPiece(startPosition, King);
-                        board.deletePiece(new ChessPosition(left_row, 3));// delete old king                                          //BBB
-                        posible_move.add(new ChessMove(startPosition, new ChessPosition(left_row,3), null));//add the numberTwo_block move to king_list
+                        board.deletePiece(new ChessPosition(right_row, 7));// delete old king                                          //BBB
+                        posible_move.add(new ChessMove(startPosition, new ChessPosition(right_row,7), null));//add the numberTwo_block move to king_list
                     }
                 }
             }
         }
 
-/// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
         for(ChessMove move : posible_move){
             ChessPiece possible_enemy = board.getPiece(move.getEndPosition());
 
@@ -154,18 +170,77 @@ public class ChessGame {
         if(target == null) throw new InvalidMoveException();
         if(team_turn != target.getTeamColor()) throw new InvalidMoveException();
         if(! validMoves(move.getStartPosition()).contains(move)) throw new InvalidMoveException();
+        TeamColor color = target.getTeamColor();
 
         //if nothing wrong, you may make the movement now(if pawn, pay attention)
+
+        if(target.getPieceType() == ChessPiece.PieceType.KING){
+            if(color == TeamColor.WHITE){
+                whiteKingMoved=true;
+            }else blackKingMoved = true;
+        }
+
+        if(target.getPieceType() == ChessPiece.PieceType.ROOK && move.getStartPosition().getColumn()==1){
+            if(color == TeamColor.WHITE){
+                whiteLeftRookMoved=true;
+            }else blackLeftRookMoved = true;
+        }
+
+        if(target.getPieceType() == ChessPiece.PieceType.ROOK && move.getStartPosition().getColumn()==8){
+            if(color == TeamColor.WHITE){
+                whiteRightRookMoved=true;
+            }else blackRightRookMoved = true;
+        }
+
+
         if(move.getPromotionPiece()!=null){
             board.addPiece(move.getEndPosition(), new ChessPiece(target.getTeamColor(), move.getPromotionPiece()));
         }else board.addPiece(move.getEndPosition(), target);
         board.deletePiece(move.getStartPosition());
         /// ////////////////////////////////IF CASTLING//////////////////////////////////////////////
-        if(target.getPieceType() == ChessPiece.PieceType.KING && Math.abs(move.getStartPosition().getColumn()-move.getEndPosition().getColumn())==2){
-            ChessPiece ROOK = board.getPiece(castlingRookPos);
-            board.addPiece(besidesKingPos, ROOK);
-            board.deletePiece(castlingRookPos);
+
+        int dif = move.getStartPosition().getColumn()-move.getEndPosition().getColumn();
+
+        if(target.getPieceType() == ChessPiece.PieceType.KING && Math.abs(dif)==2){
+            int leftRow = move.getStartPosition().getRow();
+        // L E F T
+
+            if(dif > 0) {
+                ChessPiece leftROOK = board.getPiece(new ChessPosition(leftRow, 1));
+
+                board.addPiece(new ChessPosition(leftRow, 4), leftROOK);
+                board.deletePiece(new ChessPosition(leftRow, 1));
+
+                if(color == TeamColor.WHITE){
+                    whiteKingMoved=true;
+                    whiteLeftRookMoved=true;
+                }else{blackKingMoved=true;
+                    blackLeftRookMoved=true;}
+            }
+
+
+
+
+        // R I G H T
+            if(dif < 0) {
+                ChessPiece rightRook = board.getPiece(new ChessPosition(leftRow, 8));
+
+                board.addPiece(new ChessPosition(leftRow, 6), rightRook);
+                board.deletePiece(new ChessPosition(leftRow, 8));
+
+                if(color == TeamColor.WHITE){
+                    whiteKingMoved=true;
+                    whiteRightRookMoved=true;
+                }else{blackKingMoved=true;
+                    blackRightRookMoved=true;}
+            }
         }
+
+
+
+
+
+
         team_turn = target.getTeamColor()==TeamColor.WHITE ?TeamColor.BLACK: TeamColor.WHITE;
     }
 
