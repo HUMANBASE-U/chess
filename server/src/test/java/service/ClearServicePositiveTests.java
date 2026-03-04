@@ -11,7 +11,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class clearServicePositive {
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+public class ClearServicePositiveTests {
     private DataAccess dao;
     private ClearService clearMethod;
 
@@ -26,11 +28,12 @@ public class clearServicePositive {
     void setClearMethod() throws DataAccessException {
         dao.createUser(new UserData("eason", "123", "123@gmail.com"));
         dao.createAuth(new AuthData("&s2", "eason"));
-        dao.createGame(new GameData(0,"eason", "ajax", "badday", new ChessGame()));
+        dao.createGame(new GameData(2,"eason", "ajax", "badday", new ChessGame()));
 
-        dao.clear();
+        clearMethod.clear();
 
-        assertNull
+        assertNull(dao.getUser("eason"));
+        assertNull(dao.getAuth("&s2"));
+        assertNull(dao.getGame(2));
     }
-
 }
