@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MemoryUserDao implements DataAccess{
+public class MemoryDao implements DataAccess{
     private final Map<String, UserData> userMap = new HashMap<>();
     private final Map<String, AuthData> authMap = new HashMap<>();
     private final Map<Integer, GameData> gameMap = new HashMap<>();
