@@ -47,11 +47,8 @@ public class UserService {
     }
 
     private static void verifyInCaseBlank(String... lines) throws BadRequestException{
-        int count = 0,num = 0;
         for(String l : lines){
-            num++;
-            if(l!=null) count++;
+            if(l == null) throw new BadRequestException("Error: bad request");
         }
-        if(count != num) throw new BadRequestException("Error: bad request");
     }
 }
