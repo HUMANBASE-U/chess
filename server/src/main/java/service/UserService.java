@@ -3,6 +3,7 @@ package service;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import model.AuthData;
+import model.UserData;
 
 import java.util.UUID;
 
@@ -19,8 +20,9 @@ public class UserService {
 
 
 
-
+//if nothing wrong, do:
           String authToken = newAuth();
+          dao.createUser(new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email())); // 存入服务器userData
           dao.createAuth(new AuthData(authToken, registerRequest.username()));//服务器存入authdata
         return new RR.RegisterResult(registerRequest.username(), authToken);
     }
@@ -35,4 +37,5 @@ public class UserService {
     private static String newAuth() {
         return UUID.randomUUID().toString();
     }
+
 }
