@@ -33,7 +33,7 @@ public class GameService {
 
     public RR.EmptyResult joinGame(RR.JoinGameRequest request) throws DataAccessException, AlreadyTakenException, BadRequestException, UnauthorizedException {
         String color = request.color();
-        int gameId = request.gameId();
+        int gameId = request.gameID();
 
         //verify if wrong input
         if(gameId <= 0 || color==null || dao.getGame(gameId) == null) throw new BadRequestException("Error: bad request");
@@ -51,12 +51,12 @@ public class GameService {
         //如果是白的来了
         if(Objects.equals(color, "WHITE")) {
             if(oldGame.whiteUsername() == null) {
-            newGame = new GameData(request.gameId(), username, oldGame.blackUsername(), oldGame.gameName(), oldGame.game());
+            newGame = new GameData(request.gameID(), username, oldGame.blackUsername(), oldGame.gameName(), oldGame.game());
             }else throw new AlreadyTakenException("Error: already taken");
 
         //如果是黑的来了
         }else              if(oldGame.blackUsername() == null) {
-            newGame = new GameData(request.gameId(), oldGame.whiteUsername(), username, oldGame.gameName(), oldGame.game());
+            newGame = new GameData(request.gameID(), oldGame.whiteUsername(), username, oldGame.gameName(), oldGame.game());
         }else throw new AlreadyTakenException("Error: already taken");
         //FINAL
         dao.updateGame(newGame);

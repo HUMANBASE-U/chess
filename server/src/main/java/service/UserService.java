@@ -46,7 +46,7 @@ public class UserService {
     }
 
 
-    public void logout(RR.LogoutRequest logoutRequest) throws DataAccessException, BadRequestException, UnauthorizedException {
+    public void logout(RR.LogoutRequest logoutRequest) throws DataAccessException, UnauthorizedException {
         //verify token
         if(logoutRequest.authToken() == null || dao.getAuth(logoutRequest.authToken()) == null) throw new UnauthorizedException("Error: unauthorized");
 
