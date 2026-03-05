@@ -20,6 +20,7 @@ public class UserService {
 
         if(dao.getUser(registerRequest.username())!=null) throw new AlreadyTakenException("Error: already taken");
 
+
 //if nothing wrong, do:
         String authToken = newAuth();
         dao.createUser(new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email())); // 存入服务器userData
@@ -36,7 +37,11 @@ public class UserService {
     }
 
 
-    public void logout(RR.LogoutRequest logoutRequest) throws DataAccessException{}
+    public void logout(RR.LogoutRequest logoutRequest) throws DataAccessException, BadRequestException, UnauthorizedException {
+        //verify token
+        if(logoutRequest.authToken() == null || dao.getAuth(logoutRequest.authToken()) == null) throw new UnauthorizedException("Error: unauthorized");
+        //
+    }
 
     /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
