@@ -19,10 +19,10 @@ public class RR {
     public record CreateGameResult(int gameId) {}
 
 
-    public record JoinGameRequest(String gameName, String authToken) {}
+    public record JoinGameRequest(int gameId, String color, String authToken) {}
 
 
-    public record ListGameRequest(String gameName, GameData authToken) {}
+    public record ListGameRequest(String gameName, String authToken) {}
     public record ListGameResult(int gameId, String whiteName, String blackName, String gameName) {}
 
 
