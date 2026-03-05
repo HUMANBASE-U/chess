@@ -31,32 +31,35 @@ public class GameService {
         return result;
     }
 
-    public RR.EmptyResult joinFame(RR.JoinGameRequest request) throws DataAccessException, AlreadyTakenException {
+    public RR.EmptyResult joinFame(RR.JoinGameRequest request) throws DataAccessException, AlreadyTakenException, BadRequestException, UnauthorizedException {
         String color = request.color();
         int gameId = request.gameId();
 
-
+        //verify if wrong input
+        if(gameId <= 0 || color==null || dao.getGame(gameId) == null) throw new BadRequestException("Error: bad request");
+        //verify color
+        if(!color.equals("WHITE") && !color.equals("BLACK")) throw new BadRequestException("Error: bad request");
+        //verify token
+        if(request.authToken() == null || dao.getAuth(request.authToken()) == null) throw new UnauthorizedException("Error: unauthorized");
 
         //success
         AuthData auth = dao.getAuth(request.authToken());
-        GameData oldGame = dao.getGame(gameId);
-        //(分黑白）
         String username = auth.username();
+        GameData oldGame = dao.getGame(gameId);
+        GameData newGame;
+
+        //如果是白的来了
         if(Objects.equals(color, "WHITE")) {
-            if(oldGame.whiteUsername() != null) {
-            GameData newGame = new GameData(request.gameId(), username, oldGame.blackUsername(), oldGame.gameName(), new ChessGame());
+            if(oldGame.whiteUsername() == null) {
+            newGame = new GameData(request.gameId(), username, oldGame.blackUsername(), oldGame.gameName(), oldGame.game());
             }else throw new AlreadyTakenException("Error: already taken");
 
-        }else              if(oldGame.whiteUsername() != null) {
-            GameData newGame = new GameData(request.gameId(), username, oldGame.blackUsername(), oldGame.gameName(), new ChessGame());
+        //如果是黑的来了
+        }else              if(oldGame.blackUsername() == null) {
+            newGame = new GameData(request.gameId(), oldGame.whiteUsername(), username, oldGame.gameName(), oldGame.game());
         }else throw new AlreadyTakenException("Error: already taken");
-
-
-        GameData newGame = new GameData(request.gameId(), oldGame.whiteUsername(),username,  oldGame.gameName(), new ChessGame());
-
-        dao.updateGame();
-
-
+        //FINAL
+        dao.updateGame(newGame);
         return new RR.EmptyResult();
     }
 }
