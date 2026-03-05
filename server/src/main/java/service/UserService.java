@@ -5,6 +5,7 @@ import dataaccess.DataAccessException;
 import model.AuthData;
 import model.UserData;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class UserService {
@@ -30,17 +31,17 @@ public class UserService {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public RR.LoginResult login(RR.LoginRequest loginRequest) throws DataAccessException, BadRequestException {
+    public RR.LoginResult login(RR.LoginRequest loginRequest) throws DataAccessException, BadRequestException, UnauthorizedException {
         //verify if wrong input
         String userName = loginRequest.username();
         String password = loginRequest.password();
         if(userName == null || password == null) throw new BadRequestException("Error: bad request");
 
         //verify your name and password
-
+        if(dao.getUser(userName) == null || !Objects.equals(dao.getUser(userName).password(), password)) throw new UnauthorizedException("Error: unauthorized");
 
         String authToken = newAuth();
-        dao.createAuth(new AuthData(authToken, ));
+        dao.createAuth(new AuthData(authToken, userName));
         return new RR.LoginResult(loginRequest.username(), authToken);
     }
 
