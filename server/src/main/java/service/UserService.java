@@ -45,17 +45,12 @@ public class UserService {
         return new RR.LoginResult(loginRequest.username(), authToken);
     }
 
-
     public void logout(RR.LogoutRequest logoutRequest) throws DataAccessException, UnauthorizedException {
         //verify token
         if(logoutRequest.authToken() == null || dao.getAuth(logoutRequest.authToken()) == null) throw new UnauthorizedException("Error: unauthorized");
 
         dao.deleteAuth(logoutRequest.authToken());
     }
-
-    /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 
     private static String newAuth() {
         return UUID.randomUUID().toString();

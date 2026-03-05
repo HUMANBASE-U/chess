@@ -1,7 +1,12 @@
 package server;
 
+import Handler.Handler;
 import com.google.gson.Gson;
+import dataaccess.MemoryDao;
 import io.javalin.*;
+import service.ClearService;
+import service.GameService;
+import service.UserService;
 
 public class Server {
 
@@ -9,9 +14,20 @@ public class Server {
 
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
+        MemoryDao dao = new MemoryDao();
+        Handler handler = new Handler(new ClearService(dao), new UserService(dao), new GameService(dao));
 
         // Register your endpoints and exception handlers here.
 
+        javalin.delete("/db", handler::clearHandler);
+
+        javalin.post("/user", handler::registerHandler);
+        javalin.post("/session", handler::loginHandler);
+        javalin.delete("/session", handler::logoutHandler);
+
+        javalin.post("/game", handler::createGameHandler);
+        javalin.put("/game", handler::joinGameHandler);
+        javalin.get("/game", handler::listGameHandler);
     }
 
     public int run(int desiredPort) {
