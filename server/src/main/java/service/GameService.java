@@ -6,7 +6,6 @@ import dataaccess.DataAccessException;
 import model.AuthData;
 import model.GameData;
 
-import java.util.List;
 import java.util.Objects;
 
 public class GameService {
@@ -32,7 +31,7 @@ public class GameService {
         return result;
     }
 
-    public RR.EmptyResult joinFame(RR.JoinGameRequest request) throws DataAccessException, AlreadyTakenException, BadRequestException, UnauthorizedException {
+    public RR.EmptyResult joinGame(RR.JoinGameRequest request) throws DataAccessException, AlreadyTakenException, BadRequestException, UnauthorizedException {
         String color = request.color();
         int gameId = request.gameId();
 

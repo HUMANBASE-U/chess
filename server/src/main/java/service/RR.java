@@ -18,14 +18,13 @@ public class RR {
 
     //GAME
     public record CreateGameRequest(String gameName, String authToken) {}
-    public record CreateGameResult(int gameId) {}
+    public record CreateGameResult(int gameID) {}
 
 
-    public record JoinGameRequest(int gameId, String color, String authToken) {}
+    public record JoinGameRequest(int gameID, String color, String authToken) {}
 
 
-    public record ListGameRequest(String gameName, String authToken) {}
-    public record ListGameResult(List<GameData> gameDataListList) {}
-
+    public record ListGameRequest(String authToken) {}
+    public record ListGameResult(List<GameData> games) {}
 
 }

@@ -30,9 +30,17 @@ public class UserService {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public RR.LoginResult login(RR.LoginRequest loginRequest) throws DataAccessException{
+    public RR.LoginResult login(RR.LoginRequest loginRequest) throws DataAccessException, BadRequestException {
+        //verify if wrong input
+        String userName = loginRequest.username();
+        String password = loginRequest.password();
+        if(userName == null || password == null) throw new BadRequestException("Error: bad request");
+
+        //verify your name and password
+
 
         String authToken = newAuth();
+        dao.createAuth(new AuthData(authToken, ));
         return new RR.LoginResult(loginRequest.username(), authToken);
     }
 
@@ -40,7 +48,8 @@ public class UserService {
     public void logout(RR.LogoutRequest logoutRequest) throws DataAccessException, BadRequestException, UnauthorizedException {
         //verify token
         if(logoutRequest.authToken() == null || dao.getAuth(logoutRequest.authToken()) == null) throw new UnauthorizedException("Error: unauthorized");
-        //
+
+        dao.deleteAuth(logoutRequest.authToken());
     }
 
     /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
