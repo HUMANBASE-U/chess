@@ -6,6 +6,7 @@ import dataaccess.DataAccessException;
 import model.AuthData;
 import model.GameData;
 
+import java.util.List;
 import java.util.Objects;
 
 public class GameService {
@@ -61,5 +62,11 @@ public class GameService {
         //FINAL
         dao.updateGame(newGame);
         return new RR.EmptyResult();
+    }
+
+    public RR.ListGameResult listGame(RR.ListGameRequest request) throws DataAccessException, UnauthorizedException {
+        //verify token
+        if(request.authToken() == null || dao.getAuth(request.authToken()) == null) throw new UnauthorizedException("Error: unauthorized");
+        return new RR.ListGameResult(dao.listGames());
     }
 }

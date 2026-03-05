@@ -2,6 +2,8 @@ package service;
 
 import model.GameData;
 
+import java.util.List;
+
 public class RR {
     public record EmptyResult() {};
 
@@ -23,7 +25,7 @@ public class RR {
 
 
     public record ListGameRequest(String gameName, String authToken) {}
-    public record ListGameResult(int gameId, String whiteName, String blackName, String gameName) {}
+    public record ListGameResult(List<GameData> gameDataListList) {}
 
 
 }
