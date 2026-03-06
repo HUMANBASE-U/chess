@@ -136,13 +136,15 @@ public class ChessGame {
                 ChessPosition searchPos = new ChessPosition(i, j);
                 ChessPiece target = board.getPiece(searchPos);
                 // Found the enemy!
-                if (target != null && target.getTeamColor() == enemyColor) {
-                    for (ChessMove moves : target.pieceMoves(board, searchPos)) {
-                        if (moves.getEndPosition().equals(kingPos)) {
-                            return true;//and king has been threatened
-                        }
+                if (target == null || target.getTeamColor() != enemyColor) {
+                    continue;
+                }
+                for (ChessMove moves : target.pieceMoves(board, searchPos)) {
+                    if (moves.getEndPosition().equals(kingPos)) {
+                        return true;//and king has been threatened
                     }
                 }
+
             }
         }
         return false;
@@ -159,12 +161,16 @@ public class ChessGame {
         if (!isInCheck(teamColor)) {
             return false;  // have to be in danger first
         }
+
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 8; j++) {
                 ChessPosition targetPos = new ChessPosition(i, j);
                 ChessPiece target = board.getPiece(targetPos);
-                if (target != null && target.getTeamColor() == teamColor && !validMoves(targetPos).isEmpty()) {
-                    return false;
+                if (target != null && target.getTeamColor() == teamColor) {
+
+                    if (!validMoves(targetPos).isEmpty()) {
+                        return false;
+                    }
                 }
             }//if you are an alley and you do have some moves , return false;
         }

@@ -35,7 +35,8 @@ public class GameService {
         return result;
     }
 
-    public RR.EmptyResult joinGame(RR.JoinGameRequest request) throws DataAccessException, AlreadyTakenException, BadRequestException, UnauthorizedException {
+    public RR.EmptyResult joinGame(RR.JoinGameRequest request) 
+    throws DataAccessException, AlreadyTakenException, BadRequestException, UnauthorizedException {
         String playerColor = request.playerColor();
         int gameId = request.gameID();
 
