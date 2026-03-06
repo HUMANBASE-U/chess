@@ -16,8 +16,9 @@ public class ListGamePositiveTests {
     @BeforeEach
     void setUp() {
         dao = new MemoryDao();
-        userService = new UserService(dao);
         gameService = new GameService(dao);
+
+        userService = new UserService(dao);
     }
 
     @Test

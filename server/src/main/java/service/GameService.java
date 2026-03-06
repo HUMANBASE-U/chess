@@ -18,9 +18,13 @@ public class GameService {
 
     public RR.CreateGameResult createGame(RR.CreateGameRequest request) throws DataAccessException, BadRequestException, UnauthorizedException {
         //verify if wrong input
-        if(request.gameName()==null) throw new BadRequestException("Error: bad request");
+        if (request.gameName() == null) {
+            throw new BadRequestException("Error: bad request");
+        }
         //verify token
-        if(request.authToken() == null || dao.getAuth(request.authToken()) == null) throw new UnauthorizedException("Error: unauthorized");
+        if (request.authToken() == null || dao.getAuth(request.authToken()) == null) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
 
         //success
         int gameId = idNumber++;
@@ -36,11 +40,17 @@ public class GameService {
         int gameId = request.gameID();
 
         //verify if wrong input
-        if(gameId <= 0 || playerColor ==null || dao.getGame(gameId) == null) throw new BadRequestException("Error: bad request");
+        if (gameId <= 0 || playerColor == null || dao.getGame(gameId) == null) {
+            throw new BadRequestException("Error: bad request");
+        }
         //verify playerColor
-        if(!playerColor.equals("WHITE") && !playerColor.equals("BLACK")) throw new BadRequestException("Error: bad request");
+        if (!playerColor.equals("WHITE") && !playerColor.equals("BLACK")) {
+            throw new BadRequestException("Error: bad request");
+        }
         //verify token
-        if(request.authToken() == null || dao.getAuth(request.authToken()) == null) throw new UnauthorizedException("Error: unauthorized");
+        if (request.authToken() == null || dao.getAuth(request.authToken()) == null) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
 
         //success
         AuthData auth = dao.getAuth(request.authToken());
@@ -49,15 +59,21 @@ public class GameService {
         GameData newGame;
 
         //如果是白的来了
-        if(Objects.equals(playerColor, "WHITE")) {
-            if(oldGame.whiteUsername() == null) {
-            newGame = new GameData(request.gameID(), username, oldGame.blackUsername(), oldGame.gameName(), oldGame.game());
-            }else throw new AlreadyTakenException("Error: already taken");
+        if (Objects.equals(playerColor, "WHITE")) {
+            if (oldGame.whiteUsername() == null) {
+                newGame = new GameData(request.gameID(), username, oldGame.blackUsername(),
+                        oldGame.gameName(), oldGame.game());
+            } else {
+                throw new AlreadyTakenException("Error: already taken");
+            }
 
         //如果是黑的来了
-        }else              if(oldGame.blackUsername() == null) {
-            newGame = new GameData(request.gameID(), oldGame.whiteUsername(), username, oldGame.gameName(), oldGame.game());
-        }else throw new AlreadyTakenException("Error: already taken");
+        } else if (oldGame.blackUsername() == null) {
+            newGame = new GameData(request.gameID(), oldGame.whiteUsername(), username,
+                    oldGame.gameName(), oldGame.game());
+        } else {
+            throw new AlreadyTakenException("Error: already taken");
+        }
         //FINAL
         dao.updateGame(newGame);
         return new RR.EmptyResult();
@@ -65,7 +81,9 @@ public class GameService {
 
     public RR.ListGameResult listGame(RR.ListGameRequest request) throws DataAccessException, UnauthorizedException {
         //verify token
-        if(request.authToken() == null || dao.getAuth(request.authToken()) == null) throw new UnauthorizedException("Error: unauthorized");
+        if (request.authToken() == null || dao.getAuth(request.authToken()) == null) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
         return new RR.ListGameResult(dao.listGames());
     }
 }

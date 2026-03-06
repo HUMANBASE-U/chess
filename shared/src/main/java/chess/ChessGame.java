@@ -13,19 +13,19 @@ import java.util.Objects;
  */
 public class ChessGame {
     private  ChessBoard board;
-    private TeamColor team_turn;
+    private TeamColor teamTurn;
 
     public ChessGame() {
         board = new ChessBoard();
         board.resetBoard();
-        team_turn = TeamColor.WHITE;
+        teamTurn = TeamColor.WHITE;
     }
 
     /**
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        return this.team_turn;
+        return this.teamTurn;
     }
 
     /**
@@ -34,7 +34,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        team_turn = team;
+        teamTurn = team;
     }
 
     /**
@@ -54,23 +54,26 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece target = board.getPiece(startPosition);
-        Collection<ChessMove> posible_move = new ArrayList<>();
-        Collection<ChessMove> valid_list = new ArrayList<>();
-        if(target == null){
+        Collection<ChessMove> possibleMoves = new ArrayList<>();
+        Collection<ChessMove> validMoves = new ArrayList<>();
+        if (target == null) {
             return List.of();
         }
-        posible_move = target.pieceMoves(board, startPosition);
+        possibleMoves = target.pieceMoves(board, startPosition);
 
-        for(ChessMove move : posible_move){
-            ChessPiece possible_enemy = board.getPiece(move.getEndPosition());
+        for (ChessMove move : possibleMoves) {
+            ChessPiece possibleEnemy = board.getPiece(move.getEndPosition());
 
             board.addPiece(move.getEndPosition(),target);
-            board.del_Piece(move.getStartPosition());
-            if(!isInCheck(target.getTeamColor())) valid_list.add(move);//未改BUG：未升变的兵，虽然是模拟但可能出错
+            board.delPiece(move.getStartPosition());
+            if (!isInCheck(target.getTeamColor())) {
+                validMoves.add(move);//未改BUG：未升变的兵，虽然是模拟但可能出错
+            }
+            
             board.addPiece(move.getStartPosition(),target);// BUG 先加再删
-            board.addPiece(move.getEndPosition(), possible_enemy);
+            board.addPiece(move.getEndPosition(), possibleEnemy);
         }
-        return valid_list;
+        return validMoves;
     }
 
     /**
@@ -81,16 +84,24 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPiece target = board.getPiece(move.getStartPosition());
-        if(target == null) throw new InvalidMoveException();
-        if(team_turn != target.getTeamColor()) throw new InvalidMoveException();
-        if(! validMoves(move.getStartPosition()).contains(move)) throw new InvalidMoveException();
+        if (target == null) {
+            throw new InvalidMoveException();
+        }
+        if (teamTurn != target.getTeamColor()) {
+            throw new InvalidMoveException();
+        }
+        if (!validMoves(move.getStartPosition()).contains(move)) {
+            throw new InvalidMoveException();
+        }
 
         //if nothing wrong, you may make the movement now(if pawn, pay attention)
-        if(move.getPromotionPiece()!=null){
+        if (move.getPromotionPiece() != null) {
             board.addPiece(move.getEndPosition(), new ChessPiece(target.getTeamColor(), move.getPromotionPiece()));
-        }else board.addPiece(move.getEndPosition(), target);
-        board.del_Piece(move.getStartPosition());
-        team_turn = target.getTeamColor()==TeamColor.WHITE ?TeamColor.BLACK: TeamColor.WHITE;
+        } else {
+            board.addPiece(move.getEndPosition(), target);
+        }
+        board.delPiece(move.getStartPosition());
+        teamTurn = target.getTeamColor() == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
     }
 
     /**
@@ -100,36 +111,40 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        TeamColor enemy_color;
-        ChessPosition King_pos = null;//default king_pos
-        if(teamColor == TeamColor.BLACK){
-            enemy_color = TeamColor.WHITE;
-        }else{enemy_color = TeamColor.BLACK;}
+        TeamColor enemyColor;
+        ChessPosition kingPos = null;//default king_pos
+        if (teamColor == TeamColor.BLACK) {
+            enemyColor = TeamColor.WHITE;
+        } else {
+            enemyColor = TeamColor.BLACK;
+        }
 
 //search over the whole board
-        for(int i=1; i<=8; i++) {  //已解决BUG：先扫王再扫enemy
+        for (int i = 1; i <= 8; i++) {  //已解决BUG：先扫王再扫enemy
             for (int j = 1; j <= 8; j++) {
-                ChessPosition search_pos = new ChessPosition(i, j);
-                ChessPiece target = board.getPiece(search_pos);
+                ChessPosition searchPos = new ChessPosition(i, j);
+                ChessPiece target = board.getPiece(searchPos);
                 //Found our king!
-                if (target != null && target.getTeamColor() != enemy_color && target.getPieceType() == ChessPiece.PieceType.KING) {
-                    King_pos = search_pos;
+                if (target != null && target.getTeamColor() != enemyColor && target.getPieceType() == ChessPiece.PieceType.KING) {
+                    kingPos = searchPos;
                 }
             }
         }
 
-        for(int i=1; i<=8; i++){
-            for(int j=1; j<=8; j++){
-                ChessPosition search_pos = new ChessPosition(i, j);
-                ChessPiece target = board.getPiece(search_pos);
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPosition searchPos = new ChessPosition(i, j);
+                ChessPiece target = board.getPiece(searchPos);
                 // Found the enemy!
-                if(target!=null && target.getTeamColor() == enemy_color){
-                    for (ChessMove moves:target.pieceMoves(board, search_pos)) {
-                            if(moves.getEndPosition().equals(King_pos)) return true;//and king has been threatened
+                if (target != null && target.getTeamColor() == enemyColor) {
+                    for (ChessMove moves : target.pieceMoves(board, searchPos)) {
+                        if (moves.getEndPosition().equals(kingPos)) {
+                            return true;//and king has been threatened
                         }
                     }
                 }
             }
+        }
         return false;
     }
 
@@ -141,12 +156,16 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        if(!isInCheck(teamColor)) return false;  // have to be in danger first
-        for(int i=1; i<=8; i++){
-            for(int j=1; j<=8; j++){
-                ChessPosition target_pos = new ChessPosition(i, j);
-                ChessPiece target = board.getPiece(target_pos);
-                if(target!=null && target.getTeamColor()==teamColor && !validMoves(target_pos).isEmpty()) return false;
+        if (!isInCheck(teamColor)) {
+            return false;  // have to be in danger first
+        }
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPosition targetPos = new ChessPosition(i, j);
+                ChessPiece target = board.getPiece(targetPos);
+                if (target != null && target.getTeamColor() == teamColor && !validMoves(targetPos).isEmpty()) {
+                    return false;
+                }
             }//if you are an alley and you do have some moves , return false;
         }
         return true;
@@ -160,12 +179,16 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        if(isInCheck(teamColor)) return false;
-        for(int i=1; i<=8; i++){
-            for(int j=1; j<=8; j++){
-                ChessPosition target_pos = new ChessPosition(i, j);
-                ChessPiece target = board.getPiece(target_pos);
-                if(target!=null && target.getTeamColor()==teamColor && !validMoves(target_pos).isEmpty()) return false;
+        if (isInCheck(teamColor)) {
+            return false;
+        }
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPosition targetPos = new ChessPosition(i, j);
+                ChessPiece target = board.getPiece(targetPos);
+                if (target != null && target.getTeamColor() == teamColor && !validMoves(targetPos).isEmpty()) {
+                    return false;
+                }
             }//if you are an alley and you do have some moves , return false;
         }
         return true;
@@ -195,11 +218,11 @@ public class ChessGame {
             return false;
         }
         ChessGame chessGame = (ChessGame) o;
-        return Objects.equals(board, chessGame.board) && team_turn == chessGame.team_turn;
+        return Objects.equals(board, chessGame.board) && teamTurn == chessGame.teamTurn;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(board, team_turn);
+        return Objects.hash(board, teamTurn);
     }
 }

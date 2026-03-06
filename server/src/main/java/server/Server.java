@@ -1,6 +1,6 @@
 package server;
 
-import handler.handler;
+import handler.Handler;
 import dataaccess.MemoryDao;
 import io.javalin.*;
 import service.ClearService;
@@ -14,7 +14,7 @@ public class Server {
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         MemoryDao dao = new MemoryDao();
-        handler handler = new handler(new ClearService(dao), new UserService(dao), new GameService(dao));
+        Handler handler = new Handler(new ClearService(dao), new UserService(dao), new GameService(dao));
 
         // Register your endpoints and exception handlers here.
 

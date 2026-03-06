@@ -19,7 +19,9 @@ public class UserService {
     public RR.RegisterResult register(RR.RegisterRequest registerRequest) throws DataAccessException, AlreadyTakenException, BadRequestException {
         verifyInCaseBlank(registerRequest.username(), registerRequest.password(), registerRequest.email());  //Pre
 
-        if(dao.getUser(registerRequest.username())!=null) throw new AlreadyTakenException("Error: already taken");
+        if (dao.getUser(registerRequest.username()) != null) {
+            throw new AlreadyTakenException("Error: already taken");
+        }
 
 
 //if nothing wrong, do:
@@ -35,10 +37,15 @@ public class UserService {
         //verify if wrong input
         String userName = loginRequest.username();
         String password = loginRequest.password();
-        if(userName == null || password == null) throw new BadRequestException("Error: bad request");
+        if (userName == null || password == null) {
+            throw new BadRequestException("Error: bad request");
+        }
 
         //verify your name and password
-        if(dao.getUser(userName) == null || !Objects.equals(dao.getUser(userName).password(), password)) throw new UnauthorizedException("Error: unauthorized");
+        if (dao.getUser(userName) == null
+                || !Objects.equals(dao.getUser(userName).password(), password)) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
 
         String authToken = newAuth();
         dao.createAuth(new AuthData(authToken, userName));
@@ -47,7 +54,10 @@ public class UserService {
 
     public void logout(RR.LogoutRequest logoutRequest) throws DataAccessException, UnauthorizedException {
         //verify token
-        if(logoutRequest.authToken() == null || dao.getAuth(logoutRequest.authToken()) == null) throw new UnauthorizedException("Error: unauthorized");
+        if (logoutRequest.authToken() == null
+                || dao.getAuth(logoutRequest.authToken()) == null) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
 
         dao.deleteAuth(logoutRequest.authToken());
     }
@@ -57,8 +67,10 @@ public class UserService {
     }
 
     private static void verifyInCaseBlank(String... lines) throws BadRequestException{
-        for(String l : lines){
-            if(l == null) throw new BadRequestException("Error: bad request");
+        for (String l : lines) {
+            if (l == null) {
+                throw new BadRequestException("Error: bad request");
+            }
         }
     }
 }

@@ -25,7 +25,7 @@ public class ChessBoard {
         squares [position.getRow()-1][position.getColumn()-1] = piece;
     }
 
-    public void del_Piece(ChessPosition position) {
+    public void delPiece(ChessPosition position) {
         squares [position.getRow()-1][position.getColumn()-1] = null;
     }
 

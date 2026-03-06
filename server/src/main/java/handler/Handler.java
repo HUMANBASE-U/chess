@@ -5,14 +5,14 @@ import io.javalin.http.Context;
 import service.*;
 import java.util.Map;
 
-public class handler {
+public class Handler {
     private final Gson gson = new Gson();
 
     private final ClearService clearService;
     private final UserService userService;
     private final GameService gameService;
 
-    public handler(ClearService clearService, UserService userService, GameService gameService) {
+    public Handler(ClearService clearService, UserService userService, GameService gameService) {
         this.clearService = clearService;
         this.userService = userService;
         this.gameService = gameService;
