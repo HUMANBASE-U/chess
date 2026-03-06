@@ -1,18 +1,18 @@
-package Handler;
+package handler;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import io.javalin.http.Context;
 import service.*;
 import java.util.Map;
 
-public class Handler {
+public class handler {
     private final Gson gson = new Gson();
 
     private final ClearService clearService;
     private final UserService userService;
     private final GameService gameService;
 
-    public Handler(ClearService clearService, UserService userService, GameService gameService) {
+    public handler(ClearService clearService, UserService userService, GameService gameService) {
         this.clearService = clearService;
         this.userService = userService;
         this.gameService = gameService;
