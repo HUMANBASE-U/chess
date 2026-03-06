@@ -109,13 +109,12 @@ public class ChessPiece {
         for (int[] d : dirs) {
             int r = row + d[0];
             int c = col + d[1];
-            if (r < 1 || r > 8 || c < 1 || c > 8) {
-                continue;
-            }
-            ChessPosition pos = new ChessPosition(r, c);
-            ChessPiece target = board.getPiece(pos);
-            if (target == null || target.getTeamColor() != this.getTeamColor()) {//注意短路！短路！
-                moves.add(new ChessMove(startPos, pos, null));
+            if (!(r < 1 || r > 8 || c < 1 || c > 8)) {
+                ChessPosition pos = new ChessPosition(r, c);
+                ChessPiece target = board.getPiece(pos);
+                if (target == null || target.getTeamColor() != this.getTeamColor()) {//注意短路！短路！
+                    moves.add(new ChessMove(startPos, pos, null));
+                }
             }
         }
         return moves;
@@ -202,8 +201,10 @@ public class ChessPiece {
         if (r >= 1 && r <= 8 && c >= 1 && c <= 8) {
             ChessPosition pos = new ChessPosition(r, c);
             ChessPiece target = board.getPiece(pos);
-            if (target != null && target.getTeamColor() != this.getTeamColor()) {
-                addPawnMove(moves, startPos, pos, r == promoteRow);
+            if (target != null ) {
+                if(target.getTeamColor() != this.getTeamColor()) {
+                    addPawnMove(moves, startPos, pos, r == promoteRow);
+                }
             }
         }
 
