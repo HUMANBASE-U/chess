@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class LogoutPositiveTests {
+public class LogoutNegativeTests {
     private DataAccess dao;
     private UserService userService;
 
@@ -20,15 +20,9 @@ public class LogoutPositiveTests {
     }
 
     @Test
-    @DisplayName("Normal Logout process")
+    @DisplayName("Wrong Logout process")
     void setRegisterservice() throws BadRequestException, DataAccessException, AlreadyTakenException, UnauthorizedException {
-        //先注册
-        userService.register(new RR.RegisterRequest("s", "s", "s"));
-        String token = userService.login(new RR.LoginRequest("s", "s")).authToken();
-        //Logout不返回任何东西，这时候只能检测你没有剖错
-
-        userService.logout(new RR.LogoutRequest(token));
-        //logout不应该有token
-        assertNull(dao.getAuth(token));
+        assertThrows(UnauthorizedException.class,
+        ()-> userService.logout(new RR.LogoutRequest("s")));
     }
 }
