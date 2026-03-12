@@ -6,6 +6,7 @@ import model.GameData;
 import model.UserData;
 
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 public class SqlDao implements DataAccess {
@@ -65,7 +66,7 @@ public class SqlDao implements DataAccess {
 
     @Override
     public void clear() throws DataAccessException {
-        
+
     }
 
     @Override
@@ -82,25 +83,29 @@ public class SqlDao implements DataAccess {
     public int createGame(GameData game) throws DataAccessException{
         String sql =                 """
                 INSERT INTO games (
-                    game_id,
                     game_name,
                     white_username,
                     black_username,
                     game_json
-                )
+                ) VALUES (?,?,?,?)
                 """;
-
+        String gameJson = new Gson().toJson(game.game());
         try (var conn = DatabaseManager.getConnection();
-            var ps = conn.prepareStatement(sql)) {
+            var ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setString(2, game.gameName());
-            ps.setString(3, game.whiteUsername());
-            ps.setString(4, game.blackUsername());
+            ps.setString(1, game.gameName());
+            ps.setString(2, game.whiteUsername());
+            ps.setString(3, game.blackUsername());
+            ps.setString(4, gameJson);
+
             //Execute
             ps.executeUpdate();
 
-            var result = ps.executeQuery();
-            ps.setString(1, game.gameName());
+            var result = ps.getGeneratedKeys();
+            result.next();
+
+            int gameId = result.getInt(1);
+            return gameId;
 
 
         } catch (SQLException e) {
