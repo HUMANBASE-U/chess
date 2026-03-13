@@ -66,14 +66,18 @@ public class SqlDao implements DataAccess {
 
     @Override
     public void clear() throws DataAccessException {
-        String sql =                 """
-                DROP TABLE users,
-                DROP TABLE auths,
-                DROP TABLE games
-                """;
-        try(var conn = DatabaseManager.getConnection();
-            var ps = conn.prepareStatement(sql)){
-            ps.executeUpdate();
+        String sql1 =" DROP TABLE users";
+        String sql2 =" DROP TABLE auths";
+        String sql3 =" DROP TABLE games";
+        try(var conn = DatabaseManager.getConnection()){
+            var ps1 = conn.prepareStatement(sql1);
+            ps1.executeUpdate();
+
+            var ps2 = conn.prepareStatement(sql2);
+            ps2.executeUpdate();
+
+            var ps3 = conn.prepareStatement(sql3);
+            ps3.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException("failed to clear",e);
         }
