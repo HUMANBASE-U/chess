@@ -30,13 +30,14 @@ public class SqlDao implements DataAccess {
                 auth_token CHAR(36) PRIMARY KEY,
                 username   VARCHAR(256) NOT NULL,
                 INDEX(username)) """;
+
          String sql3 = """
                 CREATE TABLE IF NOT EXISTS games (
                  game_id        INT PRIMARY KEY AUTO_INCREMENT,
                  white_username VARCHAR(256) NULL,
                  black_username VARCHAR(256) NULL,
                  game_name      VARCHAR(256) NOT NULL,
-                 game_json      LONGTEXT NOT NULL
+                 game_json      LONGTEXT  NOT NULL
                 )
                 """;
         try(var conn = DatabaseManager.getConnection()){
@@ -102,7 +103,15 @@ String sql =                 """
 
     @Override
     public void createAuth(AuthData auth) throws DataAccessException {
-
+        String sql = "INSERT INTO auths (auth_token, username) VALUES (?, ?)";
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(sql)) {
+            ps.setString(1, auth.authToken());
+            ps.setString(2, auth.username());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to create auth", e);
+        }
     }
 
     @Override
@@ -145,12 +154,12 @@ String sql =                 """
     public AuthData getAuth(String authToken) throws DataAccessException {
         String sql = "SELECT auth_token, username FROM auths WHERE auth_token=?";
         try(var conn = DatabaseManager.getConnection();
-            var ps = conn.prepareStatement(sql);
-            ){
+            var ps = conn.prepareStatement(sql)) {
+            ps.setString(1, authToken);
             var result = ps.executeQuery();
-            if(result.next()){
-                return new AuthData(result.getString("authToken"),
-                                    result.getString("username"));
+            if (result.next()) {
+                return new AuthData(result.getString("auth_token"),
+                        result.getString("username"));
             }
         } catch (SQLException e) {
             throw new DataAccessException("failed to find authToken", e);

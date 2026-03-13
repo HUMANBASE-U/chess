@@ -26,7 +26,7 @@ public class Handler {
             ctx.result("{}");
         } catch (DataAccessException e) {
             ctx.status(500);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         }
     }
 
@@ -40,13 +40,13 @@ public class Handler {
 
         } catch (BadRequestException e) {
             ctx.status(400);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         }catch (UnauthorizedException e) {
             ctx.status(401);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         } catch (DataAccessException e) {
             ctx.status(500);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         }
     }
 
@@ -59,16 +59,16 @@ public class Handler {
             ctx.result("{}");
         } catch (BadRequestException e){
             ctx.status(400);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         }catch (UnauthorizedException e){
             ctx.status(401);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         }catch (AlreadyTakenException e){
             ctx.status(403);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message","Error: " +  e.getMessage())));
         }catch (DataAccessException e){
             ctx.status(500);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         }
     }
 
@@ -80,10 +80,10 @@ public class Handler {
             ctx.result(gson.toJson(result));
         } catch (UnauthorizedException e) {
             ctx.status(401);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         } catch (DataAccessException e) {
             ctx.status(500);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         }
     }
 
@@ -95,13 +95,13 @@ public class Handler {
             ctx.result(gson.toJson(result));
         } catch (BadRequestException e) {
             ctx.status(400);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         } catch (AlreadyTakenException e) {
             ctx.status(403);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         } catch (DataAccessException e) {
             ctx.status(500);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         }
     }
 
@@ -113,13 +113,13 @@ public class Handler {
             ctx.result(gson.toJson(result));
         } catch (BadRequestException e) {
             ctx.status(400);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         } catch (UnauthorizedException e) {
             ctx.status(401);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         } catch (DataAccessException e) {
             ctx.status(500);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         }
     }
 
@@ -131,10 +131,10 @@ public class Handler {
             ctx.result("{}");
         } catch (UnauthorizedException e) {
             ctx.status(401);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         } catch (DataAccessException e) {
             ctx.status(500);
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         }
     }
 }
