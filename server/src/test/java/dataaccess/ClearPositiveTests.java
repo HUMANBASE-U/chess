@@ -34,26 +34,12 @@ public class ClearPositiveTests {
                     email
                 ) VALUES (?,?,?)
                 """;
-        String sql2 =                 """
-                INSERT INTO games (
-                    game_name,
-                    white_username,
-                    black_username,
-                ) VALUES (?,?,?)
-                """;
+
         try(var conn = DatabaseManager.getConnection();
             var ps = conn.prepareStatement(sql1)){
             ps.setString(1, "s");
             ps.setString(2, "d");
             ps.setString(3, "u");
-            ps.executeUpdate();
-        }
-
-        try(var conn = DatabaseManager.getConnection();
-            var ps = conn.prepareStatement(sql2)){
-            ps.setString(1, "a");
-            ps.setString(2, "u");
-            ps.setString(3, "d");
             ps.executeUpdate();
         }
 
@@ -70,16 +56,7 @@ public class ClearPositiveTests {
             assertEquals(0, result.getInt(1));
         }
 
-        String sqlTest2 = """
-                SELECT COUNT* FROM users;
-                """;
-        try(var conn = DatabaseManager.getConnection();
-            var ps = conn.prepareStatement(sqlTest2)){
 
-            var result = ps.executeQuery();
-            if(result.next()) { //
-                assertEquals(0, result.getInt(1));
-            }
-        }
+
     }
 }

@@ -212,7 +212,6 @@ String sql =                 """
         }
     }
 
-
     //D
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
