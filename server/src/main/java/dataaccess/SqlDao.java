@@ -66,9 +66,9 @@ public class SqlDao implements DataAccess {
 
     @Override
     public void clear() throws DataAccessException {
-        String sql1 =" DROP TABLE users";
-        String sql2 =" DROP TABLE auths";
-        String sql3 =" DROP TABLE games";
+        String sql1 ="DELETE FROM auths";
+        String sql2 ="DELETE FROM games";
+        String sql3 ="DELETE FROM users";
         try(var conn = DatabaseManager.getConnection()){
             var ps1 = conn.prepareStatement(sql1);
             ps1.executeUpdate();
@@ -88,31 +88,19 @@ public class SqlDao implements DataAccess {
     public void createUser(UserData user) throws DataAccessException {
         String sql =                 """
                 INSERT INTO users (
-                    game_name,
-                    white_username,
-                    black_username,
-                    game_json
-                ) VALUES (?,?,?,?)
+                    username,
+                    password,
+                    email
+                ) VALUES (?,?,?)
                 """;
-        String gameJson = new Gson().toJson(game.game());
         try (var conn = DatabaseManager.getConnection();
-             var ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             var ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, game.gameName());
-            ps.setString(2, game.whiteUsername());
-            ps.setString(3, game.blackUsername());
-            ps.setString(4, gameJson);
-
+            ps.setString(1, user.username());
+            ps.setString(2, user.password());
+            ps.setString(3, user.email());
             //Execute
             ps.executeUpdate();
-
-            var result = ps.getGeneratedKeys();
-            result.next();
-
-            int gameId = result.getInt(1);
-            return gameId;
-
-
         } catch (SQLException e) {
             throw new DataAccessException("failed to clear", e);
         }
