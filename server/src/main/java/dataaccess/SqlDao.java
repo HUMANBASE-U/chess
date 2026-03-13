@@ -30,7 +30,7 @@ public class SqlDao implements DataAccess {
                 """,
 
                 """
-                CREATE TABLE IF NOT EXISTS auth (
+                CREATE TABLE IF NOT EXISTS auths (
                     auth_token CHAR(36) PRIMARY KEY,
                     username   VARCHAR(256) NOT NULL,
                     INDEX(username),
@@ -62,16 +62,56 @@ public class SqlDao implements DataAccess {
 
 
 
-    //C
+    //Clear
 
     @Override
     public void clear() throws DataAccessException {
-
+        String sql =                 """
+                DROP TABLE users,
+                DROP TABLE auths,
+                DROP TABLE games
+                """;
+        try(var conn = DatabaseManager.getConnection();
+            var ps = conn.prepareStatement(sql)){
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to clear",e);
+        }
     }
 
+    //C
     @Override
     public void createUser(UserData user) throws DataAccessException {
+        String sql =                 """
+                INSERT INTO users (
+                    game_name,
+                    white_username,
+                    black_username,
+                    game_json
+                ) VALUES (?,?,?,?)
+                """;
+        String gameJson = new Gson().toJson(game.game());
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
+            ps.setString(1, game.gameName());
+            ps.setString(2, game.whiteUsername());
+            ps.setString(3, game.blackUsername());
+            ps.setString(4, gameJson);
+
+            //Execute
+            ps.executeUpdate();
+
+            var result = ps.getGeneratedKeys();
+            result.next();
+
+            int gameId = result.getInt(1);
+            return gameId;
+
+
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to clear", e);
+        }
     }
 
     @Override
@@ -113,6 +153,8 @@ public class SqlDao implements DataAccess {
             }
     }
 
+
+    //R
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
         return null;
@@ -133,11 +175,15 @@ public class SqlDao implements DataAccess {
         return List.of();
     }
 
+
+    //U
     @Override
     public void updateGame(GameData game) throws DataAccessException {
 
     }
 
+
+    //D
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
 
