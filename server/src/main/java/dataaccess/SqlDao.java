@@ -18,75 +18,74 @@ public class SqlDao implements DataAccess {
     }
 
     private void createTables() throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection()) {
 
-            try (var[] preparedStatement = (
-                """
+
+
+
+                    String sql1 =                """
                 CREATE TABLE IF NOT EXISTS users (
                     username VARCHAR(256) PRIMARY KEY,
                     password VARCHAR(60) NOT NULL,
                     email    VARCHAR(256) NOT NULL
                 )
-                """,
-
-                """
+                """;
+                 String sql2 =                """
                 CREATE TABLE IF NOT EXISTS auths (
-                    auth_token CHAR(36) PRIMARY KEY,
-                    username   VARCHAR(256) NOT NULL,
-                    INDEX(username),
-                    FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE
-                )
-                """,
-                """
+                auth_token CHAR(36) PRIMARY KEY,
+                username   VARCHAR(256) NOT NULL,
+                INDEX(username),
+                FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE
+                                     ) """;
+         String sql3 = """
                 CREATE TABLE IF NOT EXISTS games (
-                    game_id        INT PRIMARY KEY AUTO_INCREMENT,
-                    game_name      VARCHAR(256) NOT NULL,
-                    white_username VARCHAR(256) NULL,
-                    black_username VARCHAR(256) NULL,
-                    game_json      LONGTEXT NOT NULL
+                 game_id        INT PRIMARY KEY AUTO_INCREMENT,
+                 game_name      VARCHAR(256) NOT NULL,
+                 white_username VARCHAR(256) NULL,
+                 black_username VARCHAR(256) NULL,
+                 game_json      LONGTEXT NOT NULL
                 )
-                """
+                """;
+try(var conn = DatabaseManager.getConnection()){
+        var ps1 = conn.prepareStatement(sql1);
+        ps1.executeUpdate();
 
+        var ps2 = conn.prepareStatement(sql2);
+        ps2.executeUpdate();
 
-                    )) {
-                preparedStatement.executeUpdate();
-            }
-
-
-
-        } catch (SQLException e) {
-            throw new DataAccessException("table create error", e);
-        }
+        var ps3 = conn.prepareStatement(sql3);
+        ps3.executeUpdate();
+    } catch (SQLException e) {
+        throw new DataAccessException("failed to Create a Table",e);
     }
+}
 
 
 
+//Clear
 
-    //Clear
+@Override
+public void clear() throws DataAccessException {
+String sql1 ="DELETE FROM auths";
+String sql2 ="DELETE FROM games";
+String sql3 ="DELETE FROM users";
+try(var conn = DatabaseManager.getConnection()){
+    var ps1 = conn.prepareStatement(sql1);
+    ps1.executeUpdate();
 
-    @Override
-    public void clear() throws DataAccessException {
-        String sql1 ="DELETE FROM auths";
-        String sql2 ="DELETE FROM games";
-        String sql3 ="DELETE FROM users";
-        try(var conn = DatabaseManager.getConnection()){
-            var ps1 = conn.prepareStatement(sql1);
-            ps1.executeUpdate();
+    var ps2 = conn.prepareStatement(sql2);
+    ps2.executeUpdate();
 
-            var ps2 = conn.prepareStatement(sql2);
-            ps2.executeUpdate();
+    var ps3 = conn.prepareStatement(sql3);
+    ps3.executeUpdate();
+} catch (SQLException e) {
+    throw new DataAccessException("failed to clear",e);
+}
+}
 
-            var ps3 = conn.prepareStatement(sql3);
-            ps3.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataAccessException("failed to clear",e);
-        }
-    }
-
-    //C
-    @Override
-    public void createUser(UserData user) throws DataAccessException {
-        String sql =                 """
+//C
+@Override
+public void createUser(UserData user) throws DataAccessException {
+String sql =                 """
                 INSERT INTO users (
                     username,
                     password,
@@ -150,6 +149,7 @@ public class SqlDao implements DataAccess {
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
         return null;
+
     }
 
     @Override
