@@ -1,17 +1,16 @@
-
 package dataaccess;
 
-import com.google.gson.Gson;
+import chess.ChessGame;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CreateAuthPositiveTests {
+public class CreateGamePositiveTests {
     private SqlDao dao;
 
     @BeforeEach
@@ -21,13 +20,17 @@ public class CreateAuthPositiveTests {
     }
 
     @Test
-    void CreateAuth() throws DataAccessException {
-        dao.createUser(new UserData("s", "s", "s"));
-        dao.createAuth(new AuthData("sx1", "s"));
+    void CreateGame() throws DataAccessException {
+
+        dao.createGame(
+                new GameData(0,
+                null,null,
+                "epic_game",
+                new ChessGame()));
 
         assertDoesNotThrow(() -> {
             try (var conn = DatabaseManager.getConnection();
-                 var ps = conn.prepareStatement("SELECT * FROM auths");
+                 var ps = conn.prepareStatement("SELECT * FROM games");
                  var result = ps.executeQuery()) {
                 assertTrue(result.next());
             }

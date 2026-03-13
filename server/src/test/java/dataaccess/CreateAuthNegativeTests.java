@@ -8,10 +8,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class CreateAuthPositiveTests {
+public class CreateAuthNegativeTests {
     private SqlDao dao;
 
     @BeforeEach
@@ -25,12 +24,9 @@ public class CreateAuthPositiveTests {
         dao.createUser(new UserData("s", "s", "s"));
         dao.createAuth(new AuthData("sx1", "s"));
 
-        assertDoesNotThrow(() -> {
-            try (var conn = DatabaseManager.getConnection();
-                 var ps = conn.prepareStatement("SELECT * FROM auths");
-                 var result = ps.executeQuery()) {
-                assertTrue(result.next());
-            }
+        assertThrows(DataAccessException.class,() -> {
+            dao.createAuth(new AuthData("sx1", "s"));
+
         });
     }
 }
