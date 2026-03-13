@@ -170,11 +170,48 @@ String sql =                 """
 
     @Override
     public UserData getUser(String username) throws DataAccessException {
+        String sql = "SELECT * FROM users WHERE username=?";
+
+        try(var conn = DatabaseManager.getConnection();
+            var ps = conn.prepareStatement(sql)) {
+            ps.setString(1, username);
+            var result = ps.executeQuery();
+
+            if (result.next()) {
+                return new UserData(result.getString("username"),
+                        result.getString("password"),
+                        result.getString("email")
+                        );
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to find User", e);
+        }
         return null;
     }
 
     @Override
-    public GameData getGame(int gameID) throws DataAccessException {
+    public GameData getGame(int game_id) throws DataAccessException {
+        String sql = "SELECT * FROM games WHERE game_id=?";
+
+        try(var conn = DatabaseManager.getConnection();
+            var ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, game_id);
+            var result = ps.executeQuery();
+
+// ( int gameID, String whiteUsername, String blackUsername, String gameName, ChessGame game)
+            if (result.next()) {
+                var game = gson.fromJson(result.getString("game_json"), chess.ChessGame.class);
+
+                return new GameData(result.getInt("game_id"),
+                        result.getString("white_username"),
+                        result.getString("black_username"),
+                        result.getString("game_name"),
+                        game
+                        );
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to find game", e);
+        }
         return null;
     }
 

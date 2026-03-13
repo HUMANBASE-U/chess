@@ -11,7 +11,6 @@ public class CreateGamePositiveTests {
     private DataAccess dao;
     private UserService userService;
     private GameService gameService;
-
     @BeforeEach
     void setUp() {
         dao = new MemoryDao();

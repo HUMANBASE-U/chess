@@ -1,3 +1,4 @@
+
 package dataaccess;
 
 import com.google.gson.Gson;
@@ -9,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CreateUserPositiveTests {
+public class CreateAuthPositiveTests {
     private SqlDao dao;
 
     @BeforeEach
@@ -24,7 +25,7 @@ public class CreateUserPositiveTests {
 
         assertDoesNotThrow(() -> {  //查到了就是成功（查不到报错）
             try (var conn = DatabaseManager.getConnection();
-                var ps = conn.prepareStatement("SELECT * FROM users")) {
+                 var ps = conn.prepareStatement("SELECT * FROM users")) {
                 var result = ps.executeQuery();
                 assertTrue(result.next());
             }

@@ -13,6 +13,7 @@ public class MemoryDao implements DataAccess{
     private final Map<String, UserData> userMap = new HashMap<>();
     private final Map<String, AuthData> authMap = new HashMap<>();
     private final Map<Integer, GameData> gameMap = new HashMap<>();
+    private int gameId = 1;
 
     //clear
     @Override
@@ -33,8 +34,9 @@ public class MemoryDao implements DataAccess{
     }
     @Override
     public int createGame(GameData game) throws DataAccessException{
-        gameMap.put(game.gameID(), game);
-        return game.gameID();
+
+        gameMap.put(++gameId, game);
+        return gameId;
     }
 
     //R
