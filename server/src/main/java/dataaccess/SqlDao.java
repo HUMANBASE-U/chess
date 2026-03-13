@@ -18,42 +18,37 @@ public class SqlDao implements DataAccess {
     }
 
     private void createTables() throws DataAccessException {
-
-
-
-
-                    String sql1 =                """
+        String sql1 ="""
                 CREATE TABLE IF NOT EXISTS users (
                     username VARCHAR(256) PRIMARY KEY,
                     password VARCHAR(60) NOT NULL,
                     email    VARCHAR(256) NOT NULL
                 )
                 """;
-                 String sql2 =                """
+         String sql2 =                """
                 CREATE TABLE IF NOT EXISTS auths (
                 auth_token CHAR(36) PRIMARY KEY,
                 username   VARCHAR(256) NOT NULL,
-                INDEX(username),
-                FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE
-                                     ) """;
+                INDEX(username)) """;
          String sql3 = """
                 CREATE TABLE IF NOT EXISTS games (
                  game_id        INT PRIMARY KEY AUTO_INCREMENT,
-                 game_name      VARCHAR(256) NOT NULL,
                  white_username VARCHAR(256) NULL,
                  black_username VARCHAR(256) NULL,
+                 game_name      VARCHAR(256) NOT NULL,
                  game_json      LONGTEXT NOT NULL
                 )
                 """;
-try(var conn = DatabaseManager.getConnection()){
-        var ps1 = conn.prepareStatement(sql1);
-        ps1.executeUpdate();
-
-        var ps2 = conn.prepareStatement(sql2);
-        ps2.executeUpdate();
-
-        var ps3 = conn.prepareStatement(sql3);
-        ps3.executeUpdate();
+        try(var conn = DatabaseManager.getConnection()){
+        try(var ps1 = conn.prepareStatement(sql1)) {
+            ps1.executeUpdate();
+        }
+        try(var ps2 = conn.prepareStatement(sql2)) {
+            ps2.executeUpdate();
+        }
+        try(var ps3 = conn.prepareStatement(sql3)) {
+            ps3.executeUpdate();
+        }
     } catch (SQLException e) {
         throw new DataAccessException("failed to Create a Table",e);
     }
@@ -140,7 +135,7 @@ String sql =                 """
 
 
         } catch (SQLException e) {
-            throw new DataAccessException("failed to clear", e);
+            throw new DataAccessException("failed to Create a game", e);
             }
     }
 
@@ -148,6 +143,18 @@ String sql =                 """
     //R
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
+        String sql = "SELECT auth_token, username FROM auths WHERE auth_token=?";
+        try(var conn = DatabaseManager.getConnection();
+            var ps = conn.prepareStatement(sql);
+            ){
+            var result = ps.executeQuery();
+            if(result.next()){
+                return new AuthData(result.getString("authToken"),
+                                    result.getString("username"));
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to find authToken", e);
+        }
         return null;
 
     }
@@ -171,14 +178,43 @@ String sql =                 """
     //U
     @Override
     public void updateGame(GameData game) throws DataAccessException {
+        String sql =                 """
+                UPDATE games SET
+                    game_name = ?,
+                    white_username = ?,
+                    black_username = ?,
+                    game_json = ?
+                    WHERE game_id = ?
+                """;
+        String gameJson = new Gson().toJson(game.game());
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(sql)){
 
+            ps.setString(1, game.gameName());
+            ps.setString(2, game.whiteUsername());
+            ps.setString(3, game.blackUsername());
+            ps.setString(4, gameJson);
+            ps.setInt(5, game.gameID());
+            //Execute
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to update Game", e);
+        }
     }
 
 
     //D
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
-
+        String sql ="DELETE FROM auths WHERE auth_token = ?";
+        try(var conn = DatabaseManager.getConnection();
+            var ps = conn.prepareStatement(sql)){
+            ps.setString(1, authToken);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to delete authToken",e);
+        }
     }
 
 

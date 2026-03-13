@@ -10,7 +10,6 @@ import java.util.Objects;
 
 public class GameService {
     private final DataAccess dao;
-    private int idNumber = 1;
 
     public GameService(DataAccess dao) {
         this.dao = dao;
@@ -26,13 +25,8 @@ public class GameService {
             throw new UnauthorizedException("Error: unauthorized");
         }
 
-        //success
-        int gameId = idNumber++;
-        RR.CreateGameResult result = new RR.CreateGameResult(gameId);
-
-        //createGame in dao
-        dao.createGame(new GameData(gameId, null, null, request.gameName(), new ChessGame()));
-        return result;
+        int gameId = dao.createGame(new GameData(0, null, null, request.gameName(), new ChessGame()));
+        return new RR.CreateGameResult(gameId);
     }
 
     public RR.EmptyResult joinGame(RR.JoinGameRequest request) 

@@ -4,6 +4,7 @@ import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import model.AuthData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -15,6 +16,28 @@ public class UserService {
     public UserService(DataAccess dao) {
         this.dao = dao;
     }
+
+//    private void writeHashedPasswordToDatabase(String username, String hashedPassword) {
+//    }
+//
+//    void storeUserPassword(String username, String clearTextPassword) {
+//        String hashedPassword = BCrypt.hashpw(clearTextPassword, BCrypt.gensalt());
+//
+//        // write the hashed password in database along with the user's other information
+//        writeHashedPasswordToDatabase(username, hashedPassword);
+//    }
+//
+//    private Object readHashedPasswordFromDatabase(String username) {
+//    }
+//
+//    boolean verifyUser(String username, String providedClearTextPassword) {
+//        // read the previously hashed password from the database
+//        var hashedPassword = readHashedPasswordFromDatabase(username);
+//
+//        return BCrypt.checkpw(providedClearTextPassword, hashedPassword);
+//    }
+
+
 
     public RR.RegisterResult register(RR.RegisterRequest registerRequest) throws DataAccessException, AlreadyTakenException, BadRequestException {
         verifyInCaseBlank(registerRequest.username(), registerRequest.password(), registerRequest.email());  //Pre

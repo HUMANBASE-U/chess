@@ -1,5 +1,7 @@
 package server;
 
+import dataaccess.DataAccessException;
+import dataaccess.SqlDao;
 import handler.Handler;
 import dataaccess.MemoryDao;
 import io.javalin.*;
@@ -13,7 +15,12 @@ public class Server {
 
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
-        MemoryDao dao = new MemoryDao();
+        SqlDao dao;
+        try {
+            dao = new SqlDao();
+        } catch (DataAccessException e) {
+            throw new RuntimeException("failed to initialize database", e);
+        }
         Handler handler = new Handler(new ClearService(dao), new UserService(dao), new GameService(dao));
 
         // Register your endpoints and exception handlers here.
