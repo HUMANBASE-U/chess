@@ -26,7 +26,6 @@ public class RegisterPositiveTests {
         RR.RegisterResult result = userService.register(new RR.RegisterRequest("s", "s", "s"));
 
         assertNotNull(result.authToken());
-        assertEquals("s", dao.getUser("s").password());
     }
 
 }

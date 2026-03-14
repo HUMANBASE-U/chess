@@ -17,27 +17,10 @@ public class UserService {
         this.dao = dao;
     }
 
-//    private void writeHashedPasswordToDatabase(String username, String hashedPassword) {
-//    }
-//
-//    void storeUserPassword(String username, String clearTextPassword) {
-//        String hashedPassword = BCrypt.hashpw(clearTextPassword, BCrypt.gensalt());
-//
-//        // write the hashed password in database along with the user's other information
-//        writeHashedPasswordToDatabase(username, hashedPassword);
-//    }
-//
-//    private Object readHashedPasswordFromDatabase(String username) {
-//    }
-//
-//    boolean verifyUser(String username, String providedClearTextPassword) {
-//        // read the previously hashed password from the database
-//        var hashedPassword = readHashedPasswordFromDatabase(username);
-//
-//        return BCrypt.checkpw(providedClearTextPassword, hashedPassword);
-//    }
 
-
+    String storeUserPassword(String username, String clearTextPassword) {
+        return BCrypt.hashpw(clearTextPassword, BCrypt.gensalt());
+    }
 
     public RR.RegisterResult register(RR.RegisterRequest registerRequest) throws DataAccessException, AlreadyTakenException, BadRequestException {
         verifyInCaseBlank(registerRequest.username(), registerRequest.password(), registerRequest.email());  //Pre
@@ -45,16 +28,20 @@ public class UserService {
         if (dao.getUser(registerRequest.username()) != null) {
             throw new AlreadyTakenException("Error: already taken");
         }
-
-
 //if nothing wrong, do:
         String authToken = newAuth();
-        dao.createUser(new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email())); // 存入服务器userData
+
+        String hashedPassword = storeUserPassword(registerRequest.username(), registerRequest.password());
+        dao.createUser(new UserData(registerRequest.username(), hashedPassword, registerRequest.email())); // 存入服务器userData
         dao.createAuth(new AuthData(authToken, registerRequest.username()));//服务器存入authdata
         return new RR.RegisterResult(registerRequest.username(), authToken);
     }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    boolean verifyUser(String HashedPasswordFromDatabase, String providedClearTextPassword) {
+        // read the previously hashed password from the database
+        return BCrypt.checkpw(providedClearTextPassword, HashedPasswordFromDatabase);
+    }
 
     public RR.LoginResult login(RR.LoginRequest loginRequest) throws DataAccessException, BadRequestException, UnauthorizedException {
         //verify if wrong input
@@ -66,7 +53,7 @@ public class UserService {
 
         //verify your name and password
         if (dao.getUser(userName) == null
-                || !Objects.equals(dao.getUser(userName).password(), password)) {
+                || !verifyUser(dao.getUser(userName).password(), password )) {
             throw new UnauthorizedException("Error: unauthorized");
         }
 
