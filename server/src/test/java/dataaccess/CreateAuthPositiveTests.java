@@ -21,7 +21,7 @@ public class CreateAuthPositiveTests {
     }
 
     @Test
-    void CreateAuth() throws DataAccessException {
+    void createAuth() throws DataAccessException {
         dao.createUser(new UserData("s", "s", "s"));
         dao.createAuth(new AuthData("sx1", "s"));
 

@@ -17,7 +17,7 @@ public class GetUserNegativeTests {
     }
 
     @Test
-    void GetUserNegative() throws DataAccessException {
+    void getUserNegative() throws DataAccessException {
         assertNull(dao.getUser("s"));
     }
 }

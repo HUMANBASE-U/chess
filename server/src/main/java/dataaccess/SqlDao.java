@@ -182,12 +182,12 @@ String sql =                 """
     }
 
     @Override
-    public GameData getGame(int game_id) throws DataAccessException {
+    public GameData getGame(int gameId) throws DataAccessException {
         String sql = "SELECT * FROM games WHERE game_id=?";
 
         try(var conn = DatabaseManager.getConnection();
             var ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, game_id);
+            ps.setInt(1, gameId);
             var result = ps.executeQuery();
 
 // ( int gameID, String whiteUsername, String blackUsername, String gameName, ChessGame game)

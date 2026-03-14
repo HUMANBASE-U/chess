@@ -18,7 +18,7 @@ public class ListGamesNegativeTests {
     }
 
     @Test
-    void ListGameNegative() throws DataAccessException {
+    void listGameNegative() throws DataAccessException {
         assertEquals(List.of(),dao.listGames());
     }
 }

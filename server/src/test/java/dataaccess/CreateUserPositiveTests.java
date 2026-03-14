@@ -19,7 +19,7 @@ public class CreateUserPositiveTests {
     }
 
     @Test
-    void CreateUser() throws DataAccessException {
+    void createUser() throws DataAccessException {
         dao.createUser(new UserData("s","s","s"));
 
         assertDoesNotThrow(() -> {  //查到了就是成功（查不到报错）

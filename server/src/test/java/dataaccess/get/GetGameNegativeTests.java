@@ -17,7 +17,7 @@ public class GetGameNegativeTests {
     }
 
     @Test
-    void GetGameNegative() throws DataAccessException {
+    void getGameNegative() throws DataAccessException {
         assertNull(dao.getGame(0));
     }
 }

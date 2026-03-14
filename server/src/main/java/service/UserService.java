@@ -6,7 +6,6 @@ import model.AuthData;
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.util.Objects;
 import java.util.UUID;
 
 public class UserService {
@@ -38,9 +37,9 @@ public class UserService {
     }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    boolean verifyUser(String HashedPasswordFromDatabase, String providedClearTextPassword) {
+    boolean verifyUser(String hashedPasswordFromDatabase, String providedClearTextPassword) {
         // read the previously hashed password from the database
-        return BCrypt.checkpw(providedClearTextPassword, HashedPasswordFromDatabase);
+        return BCrypt.checkpw(providedClearTextPassword, hashedPasswordFromDatabase);
     }
 
     public RR.LoginResult login(RR.LoginRequest loginRequest) throws DataAccessException, BadRequestException, UnauthorizedException {

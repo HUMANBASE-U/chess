@@ -17,7 +17,7 @@ public class GetAuthNegativeTests {
     }
 
     @Test
-    void GetAuthNegative() throws DataAccessException {
+    void getAuthNegative() throws DataAccessException {
         assertNull(dao.getAuth("s"));
     }
 }

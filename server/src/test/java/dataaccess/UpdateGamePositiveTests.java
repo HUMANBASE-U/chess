@@ -17,7 +17,7 @@ public class UpdateGamePositiveTests {
     }
 
     @Test
-    void UpdateGame() throws DataAccessException {
+    void updateGame() throws DataAccessException {
 
         int gameID = dao.createGame(
                         new GameData(0,

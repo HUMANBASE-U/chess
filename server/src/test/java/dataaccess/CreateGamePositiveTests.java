@@ -20,7 +20,7 @@ public class CreateGamePositiveTests {
     }
 
     @Test
-    void CreateGame() throws DataAccessException {
+    void createGame() throws DataAccessException {
 
         dao.createGame(
                 new GameData(0,

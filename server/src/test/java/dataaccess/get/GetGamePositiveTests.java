@@ -19,7 +19,7 @@ public class GetGamePositiveTests {
     }
 
     @Test
-    void GetGamePositive() throws DataAccessException {
+    void getGamePositive() throws DataAccessException {
         int gameId = dao.createGame(
                         new GameData(0,
                         null,null,

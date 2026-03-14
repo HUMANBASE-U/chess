@@ -18,7 +18,7 @@ public class ListGamePositiveTests {
     }
 
     @Test
-    void ListGamesPositive() throws DataAccessException {
+    void listGamesPositive() throws DataAccessException {
         int gameId = dao.createGame(
                 new GameData(0,
                         null,null,

@@ -19,7 +19,7 @@ public class GetAuthPositiveTests {
     }
 
     @Test
-    void GetAuthPositive() throws DataAccessException {
+    void getAuthPositive() throws DataAccessException {
         dao.createUser(new UserData("s","s","s"));
         dao.createAuth(new AuthData("s", "sss"));
         assertNotNull(dao.getAuth("s"));
