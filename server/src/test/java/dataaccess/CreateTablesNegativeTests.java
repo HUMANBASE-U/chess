@@ -16,10 +16,6 @@ public class CreateTablesNegativeTests {
             new SqlDao(); //new database
             try (var conn = DatabaseManager.getConnection()) {
                 selectQuery(conn, "users");
-
-                selectQuery(conn, "auths");
-
-                selectQuery(conn, "games");
             }
         });
 

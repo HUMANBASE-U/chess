@@ -1,5 +1,7 @@
-package dataaccess;
+package dataaccess.get;
 
+import dataaccess.DataAccessException;
+import dataaccess.SqlDao;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +15,7 @@ public class GetUserNegativeTests {
         dao = new SqlDao();
         dao.clear();
     }
-    
+
     @Test
     void GetUserNegative() throws DataAccessException {
         assertNull(dao.getUser("s"));
