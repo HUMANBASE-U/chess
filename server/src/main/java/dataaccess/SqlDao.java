@@ -7,6 +7,7 @@ import model.UserData;
 
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SqlDao implements DataAccess {
@@ -18,20 +19,20 @@ public class SqlDao implements DataAccess {
     }
 
     private void createTables() throws DataAccessException {
-        String sql1 ="""
+        String[] sql ={"""
                 CREATE TABLE IF NOT EXISTS users (
                     username VARCHAR(256) PRIMARY KEY,
                     password VARCHAR(60) NOT NULL,
                     email    VARCHAR(256) NOT NULL
                 )
-                """;
-         String sql2 =                """
+                """,
+                """
                 CREATE TABLE IF NOT EXISTS auths (
                 auth_token CHAR(36) PRIMARY KEY,
                 username   VARCHAR(256) NOT NULL,
-                INDEX(username)) """;
-
-         String sql3 = """
+                INDEX(username))
+                """,
+                """
                 CREATE TABLE IF NOT EXISTS games (
                  game_id        INT PRIMARY KEY AUTO_INCREMENT,
                  white_username VARCHAR(256) NULL,
@@ -39,21 +40,9 @@ public class SqlDao implements DataAccess {
                  game_name      VARCHAR(256) NOT NULL,
                  game_json      LONGTEXT  NOT NULL
                 )
-                """;
-        try(var conn = DatabaseManager.getConnection()){
-        try(var ps1 = conn.prepareStatement(sql1)) {
-            ps1.executeUpdate();
-        }
-        try(var ps2 = conn.prepareStatement(sql2)) {
-            ps2.executeUpdate();
-        }
-        try(var ps3 = conn.prepareStatement(sql3)) {
-            ps3.executeUpdate();
-        }
-    } catch (SQLException e) {
-        throw new DataAccessException("failed to Create a Table",e);
+                """};
+        mutiLineSqlHelper(sql);
     }
-}
 
 
 
@@ -61,21 +50,24 @@ public class SqlDao implements DataAccess {
 
 @Override
 public void clear() throws DataAccessException {
-String sql1 ="DELETE FROM auths";
-String sql2 ="DELETE FROM games";
-String sql3 ="DELETE FROM users";
-try(var conn = DatabaseManager.getConnection()){
-    var ps1 = conn.prepareStatement(sql1);
-    ps1.executeUpdate();
-
-    var ps2 = conn.prepareStatement(sql2);
-    ps2.executeUpdate();
-
-    var ps3 = conn.prepareStatement(sql3);
-    ps3.executeUpdate();
-} catch (SQLException e) {
-    throw new DataAccessException("failed to clear",e);
+        String[] sql = {
+                "DELETE FROM auths",
+                "DELETE FROM games",
+                "DELETE FROM users"
+        };
+        mutiLineSqlHelper(sql);
 }
+
+
+void mutiLineSqlHelper(String[] sql) throws DataAccessException {
+        for (String line : sql){
+            try(var conn = DatabaseManager.getConnection();
+                var ps = conn.prepareStatement(line)){
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                throw new DataAccessException("failed to execute mutiLine instruction",e);
+            }
+        }
 }
 
 //C
@@ -97,7 +89,7 @@ String sql =                 """
             //Execute
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("failed to clear", e);
+            throw new DataAccessException("failed to create user", e);
         }
     }
 
@@ -217,7 +209,27 @@ String sql =                 """
 
     @Override
     public List<GameData> listGames() throws DataAccessException {
-        return List.of();
+        List<GameData> gameList = new ArrayList<>();
+        String sql = "SELECT * FROM games";
+
+        try(var conn = DatabaseManager.getConnection();
+            var ps = conn.prepareStatement(sql);
+            var result = ps.executeQuery()) {
+// ( int gameID, String whiteUsername, String blackUsername, String gameName, ChessGame game)
+            while (result.next()) {
+                int gameID     = result.getInt("game_id");
+                String whiteName = result.getString("white_username");
+                String blackName = result.getString("black_username");
+                String gameName = result.getString("game_name");
+
+                var game = gson.fromJson(result.getString("game_json"), chess.ChessGame.class);
+                gameList.add(new GameData(gameID, whiteName, blackName, gameName, game));
+            }
+            return gameList;
+
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to find game", e);
+        }
     }
 
 

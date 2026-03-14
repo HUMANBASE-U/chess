@@ -1,5 +1,6 @@
 package dataaccess;
 
+import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,8 +18,9 @@ public class GetAuthPositiveTests {
 
     @Test
     void GetAuthPositive() throws DataAccessException {
-        dao.createUser(new UserData("s", "s", "s"));
-        assertNotNull(dao.getUser("s"));
+        dao.createUser(new UserData("s","s","s"));
+        dao.createAuth(new AuthData("s", "sss"));
+        assertNotNull(dao.getAuth("s"));
     }
 
 }

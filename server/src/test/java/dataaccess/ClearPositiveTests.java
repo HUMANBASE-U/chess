@@ -9,16 +9,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static javax.swing.UIManager.getInt;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ClearPositiveTests {
     private SqlDao dao;
-    private Gson gson;
 
     @BeforeEach
     void setUp() throws DataAccessException {
         dao = new SqlDao();
-        gson = new Gson();
         dao.clear();
     }
 
@@ -27,7 +25,7 @@ public class ClearPositiveTests {
     @DisplayName("clear test")
     void clearDeletesEverything() throws Exception {
 //INSERT
-        String sql1 =                 """
+        String sql1 ="""
                 INSERT INTO users (
                     username,
                     password,
@@ -44,19 +42,14 @@ public class ClearPositiveTests {
         }
 
         //TEST
-
-        String sqlTest1 = """
-                SELECT COUNT* FROM games;
-                """;
+        dao.clear();
+        String sqlTest = "SELECT * FROM users";
         try(var conn = DatabaseManager.getConnection();
-            var ps = conn.prepareStatement(sqlTest1)){
+            var ps = conn.prepareStatement(sqlTest);
+            var result = ps.executeQuery()){
 
-            var result = ps.executeQuery();
-            result.next();
-            assertEquals(0, result.getInt(1));
+            assertFalse(result.next());
         }
-
-
 
     }
 }

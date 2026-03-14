@@ -1,6 +1,8 @@
 package dataaccess;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
+import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,16 +17,13 @@ public class CreateUserNegativeTests {
     void setUp() throws DataAccessException {
         dao = new SqlDao();
         dao.clear();
+        dao.createUser(new UserData("s","s","s"));
     }
 
     @Test
-    void CreateUser() throws DataAccessException {
-        assertThrows(DataAccessException.class,() -> {  //（查不到报错）
-            try (var conn = DatabaseManager.getConnection();
-                 var ps = conn.prepareStatement("SELECT * FROM users")) {
-                var result = ps.executeQuery();
-                assertFalse(result.next());
-            }
+    void dupicatedUsers(){
+        assertThrows(DataAccessException.class,() -> {
+            dao.createUser(new UserData("s","s","s"));
         });
     }
 }
