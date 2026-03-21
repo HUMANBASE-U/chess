@@ -17,9 +17,9 @@ public class ServerFacade {
         serverUrl = url;
     }
 //Clear
-    public void logout(RR.LogoutRequest logoutRequest) throws ResponseException {
-        var path = "/session";
-        this.makeRequest("DELETE", path, logoutRequest, null);
+    public void clear() throws ResponseException {
+        var path = "/db";
+        this.makeRequest("DELETE", path, null,null);
     }
 
 //User
@@ -35,31 +35,48 @@ public class ServerFacade {
 
     public void logout(RR.LogoutRequest logoutRequest) throws ResponseException {
         var path = "/session";
-        this.makeRequest("DELETE", path, logoutRequest, null);
+        this.makeRequest("DELETE", path, null, null, logoutRequest.authToken());
     }
 
 //GAME
-    public
+    public void listGames(RR.ListGameRequest listGameRequest) throws ResponseException {
+        var path = "/game";
+        this.makeRequest("GET", path, null, RR.ListGameResult.class, listGameRequest.authToken());
+    }
 
+    public void createGame(RR.ListGameRequest createGameRequest) throws ResponseException {
+        var path = "/game";
+        this.makeRequest("POST", path, createGameRequest, RR.ListGameResult.class, createGameRequest.authToken());
+    }
 
+    public void joinGame(RR.ListGameRequest joinGameRequest) throws ResponseException {
+        var path = "/game";
+        this.makeRequest("PUT", path, joinGameRequest, RR.ListGameResult.class, joinGameRequest.authToken());
+    }
 
 
     private <T> T makeRequest(String method, String path, Object body, Class<T> responseClass) throws ResponseException {
-        HttpRequest request = buildRequest(method, path, body);
+        return makeRequest(method, path, body, responseClass, null);
+    }
+
+    private <T> T makeRequest(String method, String path, Object body, Class<T> responseClass, String authToken)
+            throws ResponseException {
+        HttpRequest request = buildRequest(method, path, body, authToken);
         HttpResponse<String> response = sendRequest(request);
         return handleResponse(response, responseClass);
     }
 
-
-
-    private HttpRequest buildRequest(String method, String path, Object body) {
-        var request = HttpRequest.newBuilder()
+    private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
+        var builder = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + path))
                 .method(method, makeJsonBody(body));
         if (body != null) {
-            request.setHeader("Content-Type", "application/json");
+            builder.setHeader("Content-Type", "application/json");
         }
-        return request.build();
+        if (authToken != null) {
+            builder.setHeader("authorization", authToken);
+        }
+        return builder.build();
     }
 
 
@@ -84,8 +101,8 @@ public class ServerFacade {
         var status = response.statusCode();
         if (!isSuccessful(status)) {
             var body = response.body();
-            if (body != null) {
-                throw ResponseException.fromJson(body);
+            if (body != null && !body.isBlank()) {
+                throw ResponseException.fromJson(status, body);
             }
 
             throw new ResponseException(ResponseException.fromHttpStatusCode(status), "other failure: " + status);

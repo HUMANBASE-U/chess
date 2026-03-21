@@ -38,19 +38,18 @@ public class ResponseException extends Exception {
 
 
 
-    public static ResponseException fromJson(String json) {
-
+    public static ResponseException fromJson(int status, String json) {
+        Code code = fromHttpStatusCode(status);
         try {
-
             ErrorResponse err = GSON.fromJson(json, ErrorResponse.class);
-            String msg = (err != null    //全量
+            String msg = (err != null
                     && err.message != null
                     && !err.message.isBlank())
                     ? err.message
                     : "Error: request failed";
-            return new ResponseException(Code.ServerError, msg);
+            return new ResponseException(code, msg);
         } catch (Exception e) {
-            return new ResponseException(Code.ServerError, "Error: request failed");
+            return new ResponseException(code, "Error: request failed");
         }
     }
 
