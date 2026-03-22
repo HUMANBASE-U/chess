@@ -1,6 +1,9 @@
 package client;
 
+import model.GameData;
+
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class Client {
@@ -13,6 +16,7 @@ public class Client {
     private State state = State.Prelogin;
     private String visitorName = null;
     private String auth = null;
+    private List<GameData> gameList;
 
     public Client(ServerFacade server) {
         this.server = server;
@@ -49,7 +53,7 @@ public class Client {
                 case "register" -> register(params);
                 case "login" -> login(params);
                 case "create" -> create(params);
-                case "list" -> list();
+                case "list" -> list(params);
                 case "join" -> join(params);
                 case "observe" -> observe(params);
                 case "logout" -> logout();
@@ -88,6 +92,7 @@ public class Client {
     //post:
 
     private String create(String... params) throws ResponseException {
+        assertLoggedIn();
         if(params.length == 1){
             server.createGame(new RR.CreateGameRequest(params[0], auth));
             return String.format("%s, you have created a game!", visitorName);
@@ -95,6 +100,45 @@ public class Client {
         throw new ResponseException(ResponseException.Code.BadRequest, "Expected: create <NAME> - a game");
     }
 
+    private String list(String... params) throws ResponseException {
+        assertLoggedIn();
+        if(params.length == 0){
+            RR.ListGameResult result = server.listGames(new RR.ListGameRequest(auth));
+            gameList = result.games();
+            for (int)
+            return String.format("%s, here's the game lists", visitorName);
+        }
+        throw new ResponseException(ResponseException.Code.BadRequest, "Expected: list");
+    }
+
+    public String join(String... params) throws ResponseException {
+        assertLoggedIn();
+        if(params.length == 2){
+
+            try { //这里用户的倒退一位下标， 然后在list找到倒退下标的data，然后取出gameID
+                int inputId = Integer.parseInt(params[0]) - 1;
+                int gameId = gameList.get(inputId).gameID();
+
+                server.joinGame(new RR.JoinGameRequest(gameId, params[1], auth));
+                return String.format("%s, you have joined in!", visitorName);
+
+            } catch (NumberFormatException e) {
+                throw new ResponseException(ResponseException.Code.BadRequest, "Expected a integer");
+            }
+
+        }
+        throw new ResponseException(ResponseException.Code.BadRequest, "Expected: join <ID> [WHITE|BLACK]");
+    }
+
+
+
+    private String observe(String... params) throws ResponseException {
+        assertLoggedIn();
+        if(params.length == 1){
+            return String.format("%s, you are observing the game now", visitorName);
+        }
+        throw new ResponseException(ResponseException.Code.BadRequest, "Expected: observe <ID>");
+    }
 
 
     public String help() {
@@ -122,7 +166,7 @@ public class Client {
         //后面用
     }
 
-    private void assertLogedIn() throws ResponseException {
+    private void assertLoggedIn() throws ResponseException {
         if (state == State.Prelogin) {
             throw new ResponseException(ResponseException.Code.Forbidden, "You must login");
         }
