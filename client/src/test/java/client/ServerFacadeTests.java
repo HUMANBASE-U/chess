@@ -6,14 +6,14 @@ import server.Server;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ServerFacadeTests {
 
     private static Server server;
     private static ServerFacade facade;
-    RR.LoginResult loginResult;
-    RR.CreateGameResult createGameResult;
-    String auth;
+    static RR.LoginResult loginResult;
+    static RR.CreateGameResult createGameResult;
+    static String auth;
 
     @BeforeAll
     public static void init() {
@@ -28,9 +28,8 @@ public class ServerFacadeTests {
         server.stop();
     }
 
-
     @Test
-    @Order(13)
+    @Order(14)
     public void clearTest() {
         Assertions.assertTrue(true); //原体
         assertDoesNotThrow(() -> facade.clear());
@@ -42,16 +41,12 @@ public class ServerFacadeTests {
         assertThrows(ResponseException.class,() -> facade.register(new RR.RegisterRequest(null,"s","s")));
     }
 
-
     @Test
     @Order(2)
     public void registerPositiveTest() throws ResponseException {
         facade.register(new RR.RegisterRequest("s","s","s"));
         assertDoesNotThrow(() -> facade.login(new RR.LoginRequest("s","s")));
     }
-
-
-
 
     @Test //换了顺序，先假登录
     @Order(3)
@@ -77,11 +72,9 @@ public class ServerFacadeTests {
 
     @Test
     @Order(6)
-    public void logoutPositiveTest() {
-        assertDoesNotThrow(() -> facade.logout(new RR.LogoutRequest(auth)));
+    public void fakeTest() {
+        Assertions.assertTrue(true); //原体
     }
-
-
 
     @Test
     @Order(7)
@@ -97,7 +90,7 @@ public class ServerFacadeTests {
         assertThrows(
                 ResponseException.class,() ->
                         facade.createGame(
-                new RR.CreateGameRequest("epicGame",auth))
+                new RR.CreateGameRequest("epicGame","sss"))
         );
     }
 
@@ -112,7 +105,6 @@ public class ServerFacadeTests {
     public void listGameNegativeTest() {
         assertThrows(ResponseException.class,() -> facade.listGames(new RR.ListGameRequest("123sss")));
     }
-
 
     @Test
     @Order(11)
@@ -130,8 +122,10 @@ public class ServerFacadeTests {
         );
     }
 
-
-
-
+    @Test
+    @Order(13)
+    public void logoutPositiveTest() {
+        assertDoesNotThrow(() -> facade.logout(new RR.LogoutRequest(auth)));
+    }
 
 }
