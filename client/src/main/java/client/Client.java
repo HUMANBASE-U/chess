@@ -1,6 +1,5 @@
 package client;
 
-import chess.ChessBoard;
 import chess.ChessGame;
 import model.GameData;
 
@@ -81,7 +80,8 @@ public class Client {
             visitorName = params[0];
             return String.format("%s, you are signed in!", visitorName);
         }
-        throw new ResponseException(ResponseException.Code.BadRequest, "Expected: register <USERNAME> <PASSWORD> <EMAIL>");
+        throw new ResponseException(
+                ResponseException.Code.BadRequest, "Expected: register <USERNAME> <PASSWORD> <EMAIL>");
     }
 
 
@@ -138,7 +138,10 @@ public class Client {
                 int inputId = Integer.parseInt(params[0]) - 1;
                 int gameId = gameList.get(inputId).gameID();
                 String myColor = params[1].toUpperCase();
-                ChessGame.TeamColor teamColor = myColor.equals("WHITE") ?ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
+                if (!myColor.equals("WHITE") && !myColor.equals("BLACK"))
+                    return String.format("%s, Expected: join <ID> [WHITE|BLACK]", visitorName);
+                ChessGame.TeamColor teamColor =
+                        myColor.equals("WHITE") ?ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
 
                 server.joinGame(new RR.JoinGameRequest(gameId, myColor, auth));
                 localGame = gameList.get(inputId).game();
@@ -151,7 +154,8 @@ public class Client {
             }  catch (IndexOutOfBoundsException e){
                 throw new ResponseException(ResponseException.Code.BadRequest, "Out of range");
             }catch (NullPointerException e){
-                throw new ResponseException(ResponseException.Code.BadRequest, "Game list is empty");
+                throw new ResponseException(ResponseException.Code.BadRequest, "Game list is empty /" +
+                        " Game can not be joined");
             }
         }
         throw new ResponseException(ResponseException.Code.BadRequest, "Expected: join <ID> [WHITE|BLACK]");
@@ -175,7 +179,8 @@ public class Client {
             }  catch (IndexOutOfBoundsException e){
                 throw new ResponseException(ResponseException.Code.BadRequest, "Out of range");
             }catch (NullPointerException e){
-                throw new ResponseException(ResponseException.Code.BadRequest, "Game list is empty");
+                throw new ResponseException(ResponseException.Code.BadRequest, "Game list is empty /" +
+                        " Game can not be joined");
             }
         }
         throw new ResponseException(ResponseException.Code.BadRequest, "Expected: observe <ID>");
