@@ -14,11 +14,11 @@ public class ChessBoardRenderer {
     private boolean IS_WHITE;
     private boolean colorFliper;
 
-    public ChessBoardRenderer(ChessBoard board, ChessGame.TeamColor color, boolean IS_WHITE, boolean colorFliper) {
+    public ChessBoardRenderer(ChessBoard board, ChessGame.TeamColor color) {
         this.board = board;
         this.color = color;
         this.IS_WHITE = (color == ChessGame.TeamColor.WHITE);
-        this.colorFliper = IS_WHITE? true : false;
+        this.colorFliper = true;
     }
 
     public void drawBoard(){
@@ -27,9 +27,10 @@ public class ChessBoardRenderer {
         for(int r=1; r<=8; r++){
             for(int c=1; c<=8; c++){
                 //双层for循环意味着每个方块打印一个 bg + target + reset + reset txt
-                //未完成：标尺
 
-                ChessPiece target = board.getPiece(new ChessPosition(r, c));
+                int projR = IS_WHITE? r : 9-r;
+                int projC = IS_WHITE? c : 9-c;
+                ChessPiece target = board.getPiece(new ChessPosition(projR, projC));
                 //如果是白的，那第一个绘制的left bottom背景是深色的，这样白棋的queen正好是light色
                 String bg = colorFliper? SET_BG_COLOR_DARK_GREEN : SET_BG_COLOR_LIGHT_GREY;
                 String p = setPiece(target);
