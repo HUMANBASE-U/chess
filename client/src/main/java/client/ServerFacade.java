@@ -46,16 +46,25 @@ public class ServerFacade {
 
     public RR.CreateGameResult createGame(RR.CreateGameRequest createGameRequest) throws ResponseException {
         var path = "/game";
-        return this.makeRequest("POST", path,new RR.CreateGameBody(createGameRequest.gameName()), RR.CreateGameResult.class, createGameRequest.authToken());
+        return this.makeRequest(
+                "POST", path,new RR.CreateGameBody(
+                createGameRequest.gameName()),
+                RR.CreateGameResult.class,
+                createGameRequest.authToken());
     }
 
     public void joinGame(RR.JoinGameRequest joinGameRequest) throws ResponseException {
         var path = "/game";
-        this.makeRequest("PUT", path, new RR.JoinGameBody(joinGameRequest.gameID(), joinGameRequest.playerColor()), RR.EmptyResult.class, joinGameRequest.authToken());
+        this.makeRequest("PUT", path, 
+                new RR.JoinGameBody(joinGameRequest.gameID(),
+                        joinGameRequest.playerColor()),
+                        RR.EmptyResult.class,
+                        joinGameRequest.authToken());
     }
 
 
-    private <T> T makeRequest(String method, String path, Object body, Class<T> responseClass) throws ResponseException {
+    private <T> T makeRequest(String method, String path, Object body, Class<T> responseClass)
+            throws ResponseException {
         return makeRequest(method, path, body, responseClass, null);
     }
 

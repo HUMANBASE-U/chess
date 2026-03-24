@@ -40,8 +40,8 @@ public class Client {
                 System.out.print(result + "\n");
                 
             } catch (Throwable e) {
-                var msg = e.toString();
-                System.out.print(msg);
+                System.out.print("Error: invalid command\n");
+
             }
         }
         System.out.println();
@@ -50,7 +50,7 @@ public class Client {
     public String eval(String input) {
         try {
             String[] tokens = input.split(" ");
-            if (tokens.length == 0) return "God bless you";
+            if (tokens.length == 0) {return "God bless you";}
             String cmd = tokens[0];
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
@@ -139,8 +139,9 @@ public class Client {
                 int inputId = Integer.parseInt(params[0]) - 1;
                 int gameId = gameList.get(inputId).gameID();
                 String myColor = params[1].toUpperCase();
-                if (!myColor.equals("WHITE") && !myColor.equals("BLACK"))
+                if (!myColor.equals("WHITE") && !myColor.equals("BLACK")) {
                     return String.format("%s, Expected: join <ID> [WHITE|BLACK]", visitorName);
+                }
                 ChessGame.TeamColor teamColor =
                         myColor.equals("WHITE") ?ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
 
