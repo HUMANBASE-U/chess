@@ -25,10 +25,13 @@ public class ChessBoardRenderer {
         System.out.print(ERASE_SCREEN);
         //如果是黑色的，r,c全都
         for(int r=1; r<=8; r++){
+            int rankNumber = IS_WHITE? 9 - r : r;
+            System.out.print(SET_BG_COLOR_WHITE + rankNumber + RESET_BG_COLOR + RESET_TEXT_COLOR);
+
             for(int c=1; c<=8; c++){
                 //双层for循环意味着每个方块打印一个 bg + target + reset + reset txt
 
-                int projR = IS_WHITE? r : 9-r;
+                int projR = IS_WHITE? 9-r : r;
                 int projC = IS_WHITE? c : 9-c;
                 ChessPiece target = board.getPiece(new ChessPosition(projR, projC));
                 //如果是白的，那第一个绘制的left bottom背景是深色的，这样白棋的queen正好是light色
@@ -37,11 +40,15 @@ public class ChessBoardRenderer {
                 colorFliper = !colorFliper;
 
                 System.out.print(bg + p + RESET_BG_COLOR + RESET_TEXT_COLOR);
-
             }
             colorFliper = !colorFliper;//行与行之间会有两个块同色，这里修复了这个bug
             System.out.println(); //换行
         }
+
+        String topFiles = IS_WHITE
+                ? "   a  b  c  d  e  f  g  h"
+                : "   h  g  f  e  d  c  b  a";
+        System.out.println(topFiles);
     }
 
     private String setPiece(ChessPiece target) {
