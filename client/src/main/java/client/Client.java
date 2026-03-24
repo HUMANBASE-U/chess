@@ -50,7 +50,8 @@ public class Client {
     public String eval(String input) {
         try {
             String[] tokens = input.split(" ");
-            String cmd = (tokens.length > 0) ? tokens[0] : "help";
+            if (tokens.length == 0) return "God bless you";
+            String cmd = tokens[0];
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
                 case "register" -> register(params);

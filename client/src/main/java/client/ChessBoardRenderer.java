@@ -33,7 +33,7 @@ public class ChessBoardRenderer {
                 int projC = IS_WHITE? c : 9-c;
                 ChessPiece target = board.getPiece(new ChessPosition(projR, projC));
                 //如果是白的，那第一个绘制的left bottom背景是深色的，这样白棋的queen正好是light色
-                String bg = colorFliper? SET_BG_COLOR_GREEN : SET_BG_COLOR_LIGHT_GREY;
+                String bg = colorFliper?  SET_BG_COLOR_LIGHT_GREY : SET_BG_COLOR_DARK_GREEN;
                 String p = setPiece(target);
                 colorFliper = !colorFliper;
 
