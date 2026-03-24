@@ -1,5 +1,7 @@
 package client;
 
+import chess.ChessBoard;
+import chess.ChessGame;
 import model.GameData;
 
 import java.util.Arrays;
@@ -17,6 +19,8 @@ public class Client {
     private String visitorName = null;
     private String auth = null;
     private List<GameData> gameList;
+    private ChessGame localGame;
+    private ChessBoardRenderer render;
 
     public Client(ServerFacade server) {
         this.server = server;
@@ -133,8 +137,13 @@ public class Client {
             try { //这里用用户的input -》 倒退一位下标， 然后在list找到 倒退下标的data， 然后取出gameID
                 int inputId = Integer.parseInt(params[0]) - 1;
                 int gameId = gameList.get(inputId).gameID();
+                String myColor = params[1].toUpperCase();
+                ChessGame.TeamColor teamColor = myColor.equals("WHITE") ?ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
 
-                server.joinGame(new RR.JoinGameRequest(gameId, params[1].toUpperCase(), auth));
+                server.joinGame(new RR.JoinGameRequest(gameId, myColor, auth));
+                localGame = gameList.get(inputId).game();
+                render = new ChessBoardRenderer(localGame.getBoard(), teamColor);
+                render.drawBoard();
                 return String.format("%s, you have joined in!", visitorName);
 
             } catch (NumberFormatException e) {
@@ -153,9 +162,21 @@ public class Client {
     private String observe(String... params) throws ResponseException {
         assertLoggedIn();
         if(params.length == 1){
+            try {
             int inputId = Integer.parseInt(params[0]) - 1;
 
+            localGame = gameList.get(inputId).game();
+            render = new ChessBoardRenderer(localGame.getBoard(), ChessGame.TeamColor.WHITE);
+            render.drawBoard();
             return String.format("%s, you are observing the game now", visitorName);
+
+            } catch (NumberFormatException e) {
+                throw new ResponseException(ResponseException.Code.BadRequest, "Expected a integer");
+            }  catch (IndexOutOfBoundsException e){
+                throw new ResponseException(ResponseException.Code.BadRequest, "Out of range");
+            }catch (NullPointerException e){
+                throw new ResponseException(ResponseException.Code.BadRequest, "Game list is empty");
+            }
         }
         throw new ResponseException(ResponseException.Code.BadRequest, "Expected: observe <ID>");
     }
