@@ -38,7 +38,6 @@ public class Client {
             try {
                 result = eval(line);
                 System.out.print(result + "\n");
-                
             } catch (Throwable e) {
                 System.out.print("Error: invalid command\n");
 
