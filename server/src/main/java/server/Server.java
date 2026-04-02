@@ -3,8 +3,8 @@ package server;
 import dataaccess.DataAccessException;
 import dataaccess.SqlDao;
 import handler.Handler;
-import dataaccess.MemoryDao;
 import io.javalin.*;
+import server.websocket.WebSocketHandler;
 import service.ClearService;
 import service.GameService;
 import service.UserService;
@@ -23,7 +23,7 @@ public class Server {
         }
         Handler handler = new Handler(new ClearService(dao), new UserService(dao), new GameService(dao));
 
-        // Register your endpoints and exception handlers here.
+        //handlers 双线
 
         javalin.delete("/db", handler::clearHandler);
 
@@ -34,6 +34,13 @@ public class Server {
         javalin.post("/game", handler::createGameHandler);
         javalin.put("/game", handler::joinGameHandler);
         javalin.get("/game", handler::listGameHandler);
+
+        WebSocketHandler webSocketHandler = new WebSocketHandler(dao);
+        javalin.ws("/ws", ws -> {
+            ws.onConnect(webSocketHandler::handleConnect);
+            ws.onMessage(webSocketHandler::handleMessage);
+            ws.onClose(webSocketHandler::handleClose);
+        });
     }
 
     public int run(int desiredPort) {
