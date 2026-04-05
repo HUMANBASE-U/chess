@@ -14,6 +14,7 @@ import java.util.Objects;
 public class ChessGame {
     private  ChessBoard board;
     private TeamColor teamTurn;
+    public boolean gameOverFlag = false;
 
     public ChessGame() {
         board = new ChessBoard();

@@ -19,7 +19,6 @@ import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
-import java.util.Locale;
 import java.util.Objects;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
@@ -27,7 +26,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private final ConnectionManager connections = new ConnectionManager();
     private final DataAccess dao;
     private final Gson gson = new Gson();
-    private boolean gameoverFlag = false;
 
     public WebSocketHandler(DataAccess dao) {
         this.dao = dao;
@@ -166,6 +164,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void makeMove(UserGameCommand command, Session session) throws IOException {
         if (command.getAuthToken() == null || command.getGameID() == null) {
             sendError(session, "Error: expect a valid auth or game id");
+            return;
         }
         try{
             //验证 auth 和 gameid,提取你的值是顺手的事
@@ -176,6 +175,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 sendError(session, "Error: incorrect input");
                 return;
             }
+            ChessGame game = gameData.game();//防御性位置
 
             if(!Objects.equals(auth.username(), gameData.whiteUsername())
                     && !Objects.equals(auth.username(), gameData.blackUsername())){
@@ -183,12 +183,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 return;
             }
 
-            if(gameoverFlag){
+            if(game.gameOverFlag){
                 sendError(session, "Error: game already over!");
                 return;
             }
 
-            ChessGame game = gameData.game();//防御性位置
             ChessGame.TeamColor color = game.getTeamTurn();
             ChessGame.TeamColor reversedColor = color ==
                     ChessGame.TeamColor.WHITE? ChessGame.TeamColor.BLACK: ChessGame.TeamColor.WHITE;
@@ -204,7 +203,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             ServerMessage loadGameMsg = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
             loadGameMsg.game = game;
             String json = gson.toJson(loadGameMsg);
-            connections.send(session, json);
+            connections.superBroadcast(command.getGameID(), json);
 
             //notify everyone
             ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
@@ -215,44 +214,41 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             //如果check
             if(game.isInCheck(reversedColor)){
                 //notify everyone
-                ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+                notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
                  String msg = color == ChessGame.TeamColor.WHITE
                         ?gameData.blackUsername() + "  is in check!"
                         :gameData.whiteUsername() + "  is in check!";
                 notification.message = msg;
                 json = gson.toJson(notification);
-                connections.broadcastExcept(command.getGameID(), session, json);
-                connections.send(session, msg);
+                connections.superBroadcast(command.getGameID(), json);
             }
 
             //如果胜负已分，一定是你先手
             if(game.isInCheckmate(reversedColor)){
                 //notify everyone
-                ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+                notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
                 String msg = color == ChessGame.TeamColor.WHITE
                         ?gameData.blackUsername() + "  is in checkmate, game over!"
                         :gameData.whiteUsername() + "  is in checkmate, game over!!";
                 notification.message = msg;
                 json = gson.toJson(notification);
-                connections.broadcastExcept(command.getGameID(), session, json);
-                connections.send(session, msg);
-                gameoverFlag = true;
-
+                connections.superBroadcast(command.getGameID(), json);
+                game.gameOverFlag = true;
             }
 
             if(game.isInStalemate(reversedColor)){
                 //notify everyone
-                ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+                notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
                 String msg = color == ChessGame.TeamColor.WHITE
                         ?gameData.blackUsername() + "  is in isInStalemate!"
                         :gameData.whiteUsername() + "  is in isInStalemate!";
                 notification.message = msg;
                 json = gson.toJson(notification);
-                connections.broadcastExcept(command.getGameID(), session, json);
-                connections.send(session, msg);
-                gameoverFlag = true;
+                connections.superBroadcast(command.getGameID(), json);
+                game.gameOverFlag = true;
             }
 
+            dao.updateGame(gameData.changeGame(game));
 
         } catch (DataAccessException e) {
             sendError(session, "Error: Something went wrong");

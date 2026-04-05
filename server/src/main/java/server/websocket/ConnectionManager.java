@@ -41,4 +41,20 @@ public class ConnectionManager {
             }
         }
     }
+
+    public void superBroadcast(int gameID, String json) throws IOException {
+        for (var entry : datas.entrySet()) {
+            Session s = entry.getKey();
+            //必须是该棋局
+            if (!entry.getValue().equals(gameID)) {
+                continue;
+            }
+
+            //必须还开着
+            if (s.isOpen()) {
+                s.getRemote().sendString(json);
+            }
+        }
+    }
+
 }
