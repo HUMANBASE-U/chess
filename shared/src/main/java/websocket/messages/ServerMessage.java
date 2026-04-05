@@ -14,7 +14,7 @@ public class ServerMessage {
     ServerMessageType serverMessageType;
 
     public ChessGame game;
-    public String msg;
+    public String message;
     public String errorMessage;
 
     public enum ServerMessageType {
@@ -41,11 +41,11 @@ public class ServerMessage {
             return false;
         }
         ServerMessage that = (ServerMessage) o;
-        return serverMessageType == that.serverMessageType && Objects.equals(game, that.game) && Objects.equals(msg, that.msg) && Objects.equals(errorMessage, that.errorMessage);
+        return serverMessageType == that.serverMessageType && Objects.equals(game, that.game) && Objects.equals(message, that.message) && Objects.equals(errorMessage, that.errorMessage);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(serverMessageType, game, msg, errorMessage);
+        return Objects.hash(serverMessageType, game, message, errorMessage);
     }
 }
