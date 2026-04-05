@@ -127,22 +127,22 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try{
             //验证 auth 和 gameid
             AuthData auth = dao.getAuth(command.getAuthToken());
-            GameData game = dao.getGame(command.getGameID());
+            GameData gameData = dao.getGame(command.getGameID());
 
-            if(auth==null || game==null){
+            if(auth==null || gameData ==null){
                 sendError(session, "Error: incorrect input");
                 return;
             }
 
             //移出游戏
             String userName = auth.username();
-            if(Objects.equals(userName, game.whiteUsername())){
-                game = game.changeWhiteUsername(null);
+            if(Objects.equals(userName, gameData.whiteUsername())){
+                gameData = gameData.changeWhiteUsername(null);
             }
-            if(Objects.equals(userName, game.blackUsername())) {
-                game = game.changeBlackUsername(null);
+            if(Objects.equals(userName, gameData.blackUsername())) {
+                gameData = gameData.changeBlackUsername(null);
             }
-            dao.updateGame(game);
+            dao.updateGame(gameData);
 
             //notify everyone
             ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
@@ -159,6 +159,49 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void resign(UserGameCommand command, Session session) throws IOException {
+        if (command.getAuthToken() == null || command.getGameID() == null) {
+            sendError(session, "Error: expect a valid auth or game id");
+            return;
+        }
+
+        try{
+            //验证 auth 和 gameid
+            AuthData auth = dao.getAuth(command.getAuthToken());
+            GameData gameData = dao.getGame(command.getGameID());
+
+            if(auth==null || gameData ==null){
+                sendError(session, "Error: incorrect input");
+                return;
+            }
+            ChessGame game = gameData.game();//防御性位置
+
+            //检测
+            String userName = auth.username();
+            if(!Objects.equals(userName, gameData.whiteUsername())
+                    && !Objects.equals(userName, gameData.blackUsername())){
+                sendError(session, "Error: we notice that you are not a player!");
+                return;
+            }
+
+            if(game.gameOverFlag){
+                sendError(session, "Error: Can not resign more than once!");
+                return;
+            }
+
+            //投降
+            game.gameOverFlag = true;
+            gameData = gameData.changeGame(game);
+            dao.updateGame(gameData);
+
+            //notify everyone
+            ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+            notification.message = userName + " has already resigned!";
+            String json = gson.toJson(notification);
+            connections.superBroadcast(command.getGameID(), json);
+
+        } catch (DataAccessException e) {
+            sendError(session, "Error: Something went wrong");
+        }
     }
 
     private void makeMove(UserGameCommand command, Session session) throws IOException {
@@ -176,12 +219,28 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 return;
             }
             ChessGame game = gameData.game();//防御性位置
-
+            String userName = auth.username();
             if(!Objects.equals(auth.username(), gameData.whiteUsername())
                     && !Objects.equals(auth.username(), gameData.blackUsername())){
                 sendError(session, "Error: we notice that you are not a player");
                 return;
             }
+
+            //如果有人在装对手
+            if(Objects.equals(userName, gameData.whiteUsername())){
+                if (game.getTeamTurn() == ChessGame.TeamColor.BLACK){
+                    sendError(session, "Error: we notice that you are pretending your opponent");
+                    return;
+                }
+            }
+            if(Objects.equals(userName, gameData.blackUsername())){
+                if (game.getTeamTurn() == ChessGame.TeamColor.WHITE){
+                    sendError(session, "Error: Hi, we notice that you are pretending your opponent");
+                    return;
+                }
+            }
+
+
 
             if(game.gameOverFlag){
                 sendError(session, "Error: game already over!");
@@ -211,17 +270,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             json = gson.toJson(notification);
             connections.broadcastExcept(command.getGameID(), session, json);
 
-            //如果check
-            if(game.isInCheck(reversedColor)){
-                //notify everyone
-                notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-                 String msg = color == ChessGame.TeamColor.WHITE
-                        ?gameData.blackUsername() + "  is in check!"
-                        :gameData.whiteUsername() + "  is in check!";
-                notification.message = msg;
-                json = gson.toJson(notification);
-                connections.superBroadcast(command.getGameID(), json);
-            }
+
 
             //如果胜负已分，一定是你先手
             if(game.isInCheckmate(reversedColor)){
@@ -234,6 +283,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 json = gson.toJson(notification);
                 connections.superBroadcast(command.getGameID(), json);
                 game.gameOverFlag = true;
+                dao.updateGame(gameData.changeGame(game));
+                return;
             }
 
             if(game.isInStalemate(reversedColor)){
@@ -246,9 +297,22 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 json = gson.toJson(notification);
                 connections.superBroadcast(command.getGameID(), json);
                 game.gameOverFlag = true;
+                dao.updateGame(gameData.changeGame(game));
+                return;
             }
 
-            dao.updateGame(gameData.changeGame(game));
+            //如果check
+            if(game.isInCheck(reversedColor)){
+                //notify everyone
+                notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+                String msg = color == ChessGame.TeamColor.WHITE
+                        ?gameData.blackUsername() + "  is in check!"
+                        :gameData.whiteUsername() + "  is in check!";
+                notification.message = msg;
+                json = gson.toJson(notification);
+                connections.superBroadcast(command.getGameID(), json);
+            }
+
 
         } catch (DataAccessException e) {
             sendError(session, "Error: Something went wrong");
