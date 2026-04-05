@@ -1,6 +1,8 @@
 package server.websocket;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
@@ -17,12 +19,15 @@ import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
+import java.util.Locale;
+import java.util.Objects;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
     private final DataAccess dao;
     private final Gson gson = new Gson();
+    private boolean gameoverFlag = false;
 
     public WebSocketHandler(DataAccess dao) {
         this.dao = dao;
@@ -95,7 +100,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             connections.broadcastExcept(command.getGameID(), session, json);
 
         } catch (DataAccessException e) {
-            sendError(session, "Error: incorrect input");
+            sendError(session, "Error: Something went wrong");
         }
     }
 
@@ -116,11 +121,129 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void leave(UserGameCommand command, Session session) throws IOException {
+        if (command.getAuthToken() == null || command.getGameID() == null) {
+            sendError(session, "Error: expect a valid auth or game id");
+            return;
+        }
+
+        try{
+            //验证 auth 和 gameid
+            AuthData auth = dao.getAuth(command.getAuthToken());
+            GameData game = dao.getGame(command.getGameID());
+
+            if(auth==null || game==null){
+                sendError(session, "Error: incorrect input");
+                return;
+            }
+
+            //移出游戏
+            String userName = auth.username();
+            if(Objects.equals(userName, game.whiteUsername())){
+                game = game.changeWhiteUsername(null);
+            }
+            if(Objects.equals(userName, game.blackUsername())) {
+                game = game.changeBlackUsername(null);
+            }
+
+            //notify everyone
+            ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+            notification.msg = userName + " left!";
+            String json = gson.toJson(notification);
+            connections.broadcastExcept(command.getGameID(), session, json);
+
+            //断开连接
+            connections.remove(session);
+
+        } catch (DataAccessException e) {
+            sendError(session, "Error: Something went wrong");
+        }
     }
 
     private void resign(UserGameCommand command, Session session) throws IOException {
     }
 
     private void makeMove(UserGameCommand command, Session session) throws IOException {
+        if (command.getAuthToken() == null || command.getGameID() == null) {
+            sendError(session, "Error: expect a valid auth or game id");
+
+            try{
+                //验证 auth 和 gameid,提取你的值是顺手的事
+                AuthData auth = dao.getAuth(command.getAuthToken());
+                GameData gameData = dao.getGame(command.getGameID());
+
+                if(auth==null || gameData ==null){
+                    sendError(session, "Error: incorrect input");
+                    return;
+                }
+
+                if(!Objects.equals(auth.username(), gameData.whiteUsername())
+                        && !Objects.equals(auth.username(), gameData.blackUsername())){
+                    sendError(session, "Error: we notice that you are not a player");
+                    return;
+                }
+
+                if(gameoverFlag){
+                    sendError(session, "Error: game already over!");
+                    return;
+                }
+
+                ChessGame game = gameData.game();//防御性位置
+                ChessGame.TeamColor color = game.getTeamTurn();
+                ChessGame.TeamColor reversedColor = color ==
+                        ChessGame.TeamColor.WHITE? ChessGame.TeamColor.BLACK: ChessGame.TeamColor.WHITE;
+                ChessMove move = command.getMove();
+
+
+                game.makeMove(move);
+                //如果check
+                if(game.isInCheck(reversedColor)){
+                    //notify everyone
+                    ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+                    notification.msg = color == ChessGame.TeamColor.WHITE
+                            ?gameData.blackUsername() + "  is in check!"
+                            :gameData.whiteUsername() + "  is in check!";
+                    String json = gson.toJson(notification);
+                    connections.broadcastExcept(command.getGameID(), session, json);
+                }
+
+                //如果胜负已分，一定是你先手
+                if(game.isInCheckmate(reversedColor)){
+                    //notify everyone
+                    ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+                    notification.msg = color == ChessGame.TeamColor.WHITE
+                            ?gameData.blackUsername() + "  is in checkmate, game over!"
+                            :gameData.whiteUsername() + "  is in checkmate, game over!!";
+                    String json = gson.toJson(notification);
+                    connections.broadcastExcept(command.getGameID(), session, json);
+                    gameoverFlag = true;
+
+                }
+
+                if(game.isInStalemate(reversedColor)){
+                    //notify everyone
+                    ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+                    notification.msg = color == ChessGame.TeamColor.WHITE
+                            ?gameData.blackUsername() + "  is in isInStalemate!"
+                            :gameData.whiteUsername() + "  is in isInStalemate!";
+                    String json = gson.toJson(notification);
+                    connections.broadcastExcept(command.getGameID(), session, json);
+                    gameoverFlag = true;
+
+                }
+
+                dao.updateGame(gameData.changeGame(game));
+
+
+                //最后 把WHITE TURN 改成 BLACK TURN
+                game.setTeamTurn(reversedColor);
+
+            } catch (DataAccessException e) {
+                sendError(session, "Error: Something went wrong");
+            } catch (InvalidMoveException e) {
+                sendError(session, "Error: Invalid move");
+            }
+            return;
+        }
+
     }
 }
