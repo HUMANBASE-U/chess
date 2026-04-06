@@ -1,6 +1,8 @@
 package client;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import model.GameData;
 
 import java.util.Arrays;
@@ -10,10 +12,12 @@ import java.util.Scanner;
 public class Client {
     public enum State {
         Prelogin,
-        Postlogin
+        Postlogin,
+        Ingame;
     }
 
     private final ServerFacade server;
+    private final WebSocketFacade socket;
     private State state = State.Prelogin;
     private String visitorName = null;
     private String auth = null;
@@ -21,8 +25,9 @@ public class Client {
     private ChessGame localGame;
     private ChessBoardRenderer render;
 
-    public Client(ServerFacade server) {
+    public Client(ServerFacade server, WebSocketFacade socket) {
         this.server = server;
+        this.socket = socket;
     }
 
     public void run() {
@@ -61,6 +66,9 @@ public class Client {
                 case "observe" -> observe(params);
                 case "logout" -> logout(params);
                 case "quit" -> "quit";
+
+                //in game
+                case "move" -> makeMove(params);
                 case "BAGAYALU" -> {
                     server.clear();
                     yield "deleted";
@@ -70,6 +78,31 @@ public class Client {
         } catch (ResponseException ex) {
             return ex.getMessage();
         }
+    }
+
+    private String makeMove(String[] params) throws ResponseException {
+        assertJoined();
+        if(params.length == 4){
+            String compact = params[0] + params[1] + params[2] + params[3];
+            if (!compact.matches("(?i)[a-h][1-8][a-h][1-8]")) {
+                throw new ResponseException(ResponseException.Code.BadRequest, "Out of range!");
+            }
+
+            ChessPosition startPos = parse(params[0].charAt(0), Integer.parseInt(params[1]));
+            ChessPosition endPos = parse(params[2].charAt(0), Integer.parseInt(params[3]));
+
+            socket.makeMove(new ChessMove(startPos, endPos, null));
+
+        }
+        throw new ResponseException(
+                ResponseException.Code.BadRequest, "Expected: move   x x   x x");
+    }
+
+    public static ChessPosition parse(char file, int rank) throws ResponseException {
+        char f = Character.toLowerCase(file);
+        int col = f - 'a' + 1;
+        int row = rank;
+        return new ChessPosition(row, col);
     }
 
 
@@ -150,6 +183,9 @@ public class Client {
                 render.drawBoard();
                 return String.format("%s, you have joined in!", visitorName);
 
+                //同时进行Connect
+
+
             } catch (NumberFormatException e) {
                 throw new ResponseException(ResponseException.Code.BadRequest, "Expected a integer");
             }  catch (IndexOutOfBoundsException e){
@@ -228,6 +264,12 @@ public class Client {
     private void assertLoggedIn() throws ResponseException {
         if (state == State.Prelogin) {
             throw new ResponseException(ResponseException.Code.Forbidden, "You must login");
+        }
+    }
+
+    private void assertJoined() throws ResponseException {
+        if (state != State.Ingame){
+            throw new ResponseException(ResponseException.Code.Forbidden, "You must in a game");
         }
     }
 
