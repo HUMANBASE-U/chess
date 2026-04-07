@@ -63,7 +63,10 @@ public class UserGameCommand {
             return false;
         }
         UserGameCommand command = (UserGameCommand) o;
-        return commandType == command.commandType && Objects.equals(authToken, command.authToken) && Objects.equals(gameID, command.gameID) && Objects.equals(move, command.move);
+        return commandType == command.commandType
+                && Objects.equals(authToken, command.authToken)
+                && Objects.equals(gameID, command.gameID)
+                && Objects.equals(move, command.move);
     }
 
     @Override

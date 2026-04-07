@@ -210,10 +210,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             return;
         }
         try{
-            //验证 auth 和 gameid,提取你的值是顺手的事
             AuthData auth = dao.getAuth(command.getAuthToken());
             GameData gameData = dao.getGame(command.getGameID());
-
             if(auth==null || gameData ==null){
                 sendError(session, "Error: incorrect input");
                 return;
@@ -226,7 +224,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 return;
             }
 
-            //如果有人在装对手
             if(Objects.equals(userName, gameData.whiteUsername())){
                 if (game.getTeamTurn() == ChessGame.TeamColor.BLACK){
                     sendError(session, "Error: we notice that you are pretending your opponent");
@@ -239,38 +236,24 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                     return;
                 }
             }
-
-
-
             if(game.gameOverFlag){
                 sendError(session, "Error: game already over!");
                 return;
             }
-
             ChessGame.TeamColor color = game.getTeamTurn();
             ChessGame.TeamColor reversedColor = color ==
                     ChessGame.TeamColor.WHITE? ChessGame.TeamColor.BLACK: ChessGame.TeamColor.WHITE;
             ChessMove move = command.getMove();
-
-
             game.makeMove(move);
-
-            //update db
             dao.updateGame(gameData.changeGame(game));
-
-            //send the gameBoard
             ServerMessage loadGameMsg = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
             loadGameMsg.game = game;
             String json = gson.toJson(loadGameMsg);
             connections.superBroadcast(command.getGameID(), json);
-
-            //notify everyone
             ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
             notification.message = "A move was made!";
             json = gson.toJson(notification);
             connections.broadcastExcept(command.getGameID(), session, json);
-
-
 
             //如果胜负已分，一定是你先手
             if(game.isInCheckmate(reversedColor)){
@@ -286,7 +269,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 dao.updateGame(gameData.changeGame(game));
                 return;
             }
-
             if(game.isInStalemate(reversedColor)){
                 //notify everyone
                 notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
@@ -300,7 +282,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 dao.updateGame(gameData.changeGame(game));
                 return;
             }
-
             //如果check
             if(game.isInCheck(reversedColor)){
                 //notify everyone
@@ -312,14 +293,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 json = gson.toJson(notification);
                 connections.superBroadcast(command.getGameID(), json);
             }
-
-
         } catch (DataAccessException e) {
             sendError(session, "Error: Something went wrong");
         } catch (InvalidMoveException e) {
             sendError(session, "Error: Invalid move");
         }
-
-
     }
 }
