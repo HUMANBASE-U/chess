@@ -15,7 +15,7 @@ public class Client {
     public enum State {
         Prelogin,
         Postlogin,
-        Ingame;
+        Ingame
     }
 
     private final ServerFacade server;
@@ -27,6 +27,7 @@ public class Client {
     private List<GameData> gameList;
     private ChessGame localGame;
     private ChessBoardRenderer render;
+    ChessGame.TeamColor teamColor = ChessGame.TeamColor.WHITE;
 
     private int gameId = -10;
 
@@ -75,6 +76,7 @@ public class Client {
 
                 //in game
                 case "move" -> makeMove(params);
+                case "redraw" -> drawBoard();
 
                 case "BAGAYALU" -> {
                     server.clear();
@@ -84,10 +86,32 @@ public class Client {
             };
         } catch (ResponseException | IOException ex) {
             return ex.getMessage();
+        } catch (InterruptedException e) {
+            return "interrupted";
         }
     }
 
-    private String makeMove(String[] params) throws ResponseException, IOException {
+    public void waitSec() throws InterruptedException {
+        //强制等待
+        int counter = 0;
+        while (notificationHandler.getGame() == null && counter < 10) {
+            Thread.sleep(200);
+            counter++;
+        }
+    }
+
+    public String drawBoard() throws InterruptedException {
+        if(notificationHandler.getGame() != null) {
+            waitSec();
+            //现在假设拿到回执，就开始render
+            localGame = notificationHandler.getGame();
+            render = new ChessBoardRenderer(localGame.getBoard(), teamColor);
+            render.drawBoard();
+            state = State.Ingame;
+        }return "we don't have a game to draw";
+    }
+
+    private String makeMove(String[] params) throws ResponseException, IOException, InterruptedException {
         assertJoined();
         if(params.length == 4){
             String compact = params[0] + params[1] + params[2] + params[3];
@@ -103,9 +127,11 @@ public class Client {
                     gameId,
                     new ChessMove(startPos, endPos, null));
 
+            drawBoard();
+            return "nice move!";
         }
         throw new ResponseException(
-                ResponseException.Code.BadRequest, "Expected: move   x x   x x");
+                ResponseException.Code.BadRequest, "Invalid!");
     }
 
     public static ChessPosition parse(char file, int rank) throws ResponseException {
@@ -173,6 +199,7 @@ public class Client {
         throw new ResponseException(ResponseException.Code.BadRequest, "Expected: list");
     }
 
+
     public String join(String... params) throws ResponseException {
         assertLoggedIn();
         if(params.length == 2){
@@ -184,32 +211,18 @@ public class Client {
                 if (!myColor.equals("WHITE") && !myColor.equals("BLACK")) {
                     return String.format("%s, Expected: join <ID> [WHITE|BLACK]", visitorName);
                 }
-                ChessGame.TeamColor teamColor =
+                teamColor =
                         myColor.equals("WHITE") ?ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
 
                 server.joinGame(new RR.JoinGameRequest(gameId, myColor, auth));
-
+                notificationHandler.setGame(null);
+                waitSec();
                 //同时进行Connect
                 socket.connect(UserGameCommand.CommandType.CONNECT,
                         auth,
                         gameId);
 
-                //强制等待
-                int counter = 0;
-                while (notificationHandler.getGame() == null && counter < 10) {
-                    Thread.sleep(200);
-                    counter++;
-                }
-
-                //现在假设拿到回执，就开始render
-                ChessGame returnedGame = notificationHandler.getGame();
-                if(returnedGame !=null){
-                    localGame = returnedGame;
-                    render = new ChessBoardRenderer(localGame.getBoard(), teamColor);
-                    render.drawBoard();
-                    state = State.Ingame;
-                }else {return "something went wrong";}
-
+                drawBoard();
                 return String.format("%s, you have joined in!", visitorName);
 
             } catch (NumberFormatException e) {
@@ -240,11 +253,7 @@ public class Client {
                     auth,
                     gameId);
 
-            int counter = 0;
-            while (notificationHandler.getGame() == null && counter < 10) {
-                Thread.sleep(200);
-                counter++;
-            }
+            waitSec();
 
             //现在假设拿到回执，就开始render
             ChessGame returnedGame = notificationHandler.getGame();
@@ -252,11 +261,11 @@ public class Client {
                 localGame = returnedGame;
                 render = new ChessBoardRenderer(localGame.getBoard(), ChessGame.TeamColor.WHITE);
                 render.drawBoard();
-                state = State.Ingame;
 
             }else {return "something went wrong";}
 
-
+            state = State.Ingame;
+            teamColor = ChessGame.TeamColor.WHITE;
             return String.format("%s, you are observing the game now", visitorName);
 
             } catch (NumberFormatException e) {
@@ -295,15 +304,34 @@ public class Client {
                     - Print this message:  "help"
                     """;
         }
-        return """
-                - create <NAME> - a game
-                - list - games
-                - join <ID> [WHITE|BLACK] - a game
-                - observe <ID> - a game
-                - logout - when you are done
-                - quit - playing chess
-                - help - with possible commands
-                """;
+
+        if (state == State.Postlogin) {
+            return """
+                    - create <NAME> - a game
+                    - list - games
+                    - join <ID> [WHITE|BLACK] - a game
+                    - observe <ID> - a game
+                    - logout - when you are done
+                    - quit - playing chess
+                    - help - with possible commands
+                    """;
+        }else {
+            return """
+                    - redraw - game
+                    - leave  - you will left the game
+                    - move  x x  x x - must have space between input
+                    - resign  - you will lose the game
+                    - highlight  - to highlight legal moves
+                    -
+                    - create <NAME> - a game
+                    - list - games
+                    - join <ID> [WHITE|BLACK] - a game
+                    - observe <ID> - a game
+                    - logout - when you are done
+                    - quit - playing chess
+                    - help - with possible commands
+                    """;
+        }
     }
 
 
