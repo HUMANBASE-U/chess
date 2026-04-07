@@ -91,14 +91,6 @@ public class Client {
         }
     }
 
-    public void waitSec() throws InterruptedException {
-        //强制等待
-        int counter = 0;
-        while (notificationHandler.getGame() == null && counter < 10) {
-            Thread.sleep(200);
-            counter++;
-        }
-    }
 
     public String drawBoard() throws InterruptedException {
         if(notificationHandler.getGame() != null) {
