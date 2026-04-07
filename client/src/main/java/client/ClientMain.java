@@ -13,7 +13,15 @@ public class ClientMain {
         }
 
         ServerFacade facade = new ServerFacade(url);
-        Client client = new Client(facade);
+        NotificationHandler handler = new NotificationHandler();
+        WebSocketFacade socket = null;
+        try{
+            socket = new WebSocketFacade(url, handler);
+        } catch (ResponseException ex) {
+            System.out.println("WebSocket initiation failed: " + ex.getMessage());
+            return;
+        }
+        Client client = new Client(facade, socket, handler);
         client.run();
     }
 }

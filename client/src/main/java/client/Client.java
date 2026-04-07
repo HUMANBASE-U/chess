@@ -4,7 +4,9 @@ import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
 import model.GameData;
+import websocket.commands.UserGameCommand;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -18,6 +20,7 @@ public class Client {
 
     private final ServerFacade server;
     private final WebSocketFacade socket;
+    private final NotificationHandler notificationHandler;
     private State state = State.Prelogin;
     private String visitorName = null;
     private String auth = null;
@@ -25,9 +28,12 @@ public class Client {
     private ChessGame localGame;
     private ChessBoardRenderer render;
 
-    public Client(ServerFacade server, WebSocketFacade socket) {
+    private int gameId = -10;
+
+    public Client(ServerFacade server, WebSocketFacade socket, NotificationHandler notificationHandler) {
         this.server = server;
         this.socket = socket;
+        this.notificationHandler = notificationHandler;
     }
 
     public void run() {
@@ -69,18 +75,19 @@ public class Client {
 
                 //in game
                 case "move" -> makeMove(params);
+
                 case "BAGAYALU" -> {
                     server.clear();
                     yield "deleted";
                 }
                 default -> help();
             };
-        } catch (ResponseException ex) {
+        } catch (ResponseException | IOException ex) {
             return ex.getMessage();
         }
     }
 
-    private String makeMove(String[] params) throws ResponseException {
+    private String makeMove(String[] params) throws ResponseException, IOException {
         assertJoined();
         if(params.length == 4){
             String compact = params[0] + params[1] + params[2] + params[3];
@@ -91,7 +98,10 @@ public class Client {
             ChessPosition startPos = parse(params[0].charAt(0), Integer.parseInt(params[1]));
             ChessPosition endPos = parse(params[2].charAt(0), Integer.parseInt(params[3]));
 
-            socket.makeMove(new ChessMove(startPos, endPos, null));
+            socket.makeMove(UserGameCommand.CommandType.MAKE_MOVE,
+                    auth,
+                    gameId,
+                    new ChessMove(startPos, endPos, null));
 
         }
         throw new ResponseException(
@@ -169,7 +179,7 @@ public class Client {
 
             try { //这里用用户的input -》 倒退一位下标， 然后在list找到 倒退下标的data， 然后取出gameID
                 int inputId = Integer.parseInt(params[0]) - 1;
-                int gameId = gameList.get(inputId).gameID();
+                gameId = gameList.get(inputId).gameID();
                 String myColor = params[1].toUpperCase();
                 if (!myColor.equals("WHITE") && !myColor.equals("BLACK")) {
                     return String.format("%s, Expected: join <ID> [WHITE|BLACK]", visitorName);
@@ -178,21 +188,39 @@ public class Client {
                         myColor.equals("WHITE") ?ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
 
                 server.joinGame(new RR.JoinGameRequest(gameId, myColor, auth));
-                localGame = gameList.get(inputId).game();
-                render = new ChessBoardRenderer(localGame.getBoard(), teamColor);
-                render.drawBoard();
-                return String.format("%s, you have joined in!", visitorName);
 
                 //同时进行Connect
+                socket.connect(UserGameCommand.CommandType.CONNECT,
+                        auth,
+                        gameId);
 
+                //强制等待
+                int counter = 0;
+                while (notificationHandler.getGame() == null && counter < 10) {
+                    Thread.sleep(200);
+                    counter++;
+                }
+
+                //现在假设拿到回执，就开始render
+                ChessGame returnedGame = notificationHandler.getGame();
+                if(returnedGame !=null){
+                    localGame = returnedGame;
+                    render = new ChessBoardRenderer(localGame.getBoard(), teamColor);
+                    render.drawBoard();
+                    state = State.Ingame;
+                }else {return "something went wrong";}
+
+                return String.format("%s, you have joined in!", visitorName);
 
             } catch (NumberFormatException e) {
                 throw new ResponseException(ResponseException.Code.BadRequest, "Expected a integer");
             }  catch (IndexOutOfBoundsException e){
                 throw new ResponseException(ResponseException.Code.BadRequest, "Out of range");
-            }catch (NullPointerException e){
+            }catch (NullPointerException | IOException e){
                 throw new ResponseException(ResponseException.Code.BadRequest, "Game list is empty /" +
                         " Game can not be joined");
+            } catch (InterruptedException e) {
+                throw new ResponseException(ResponseException.Code.BadRequest, "something went wrong!!");
             }
         }
         throw new ResponseException(ResponseException.Code.BadRequest, "Expected: join <ID> [WHITE|BLACK]");
@@ -205,19 +233,41 @@ public class Client {
         if(params.length == 1){
             try {
             int inputId = Integer.parseInt(params[0]) - 1;
+            gameId = gameList.get(inputId).gameID();
 
-            localGame = gameList.get(inputId).game();
-            render = new ChessBoardRenderer(localGame.getBoard(), ChessGame.TeamColor.WHITE);
-            render.drawBoard();
+            //同时进行Connect
+            socket.connect(UserGameCommand.CommandType.CONNECT,
+                    auth,
+                    gameId);
+
+            int counter = 0;
+            while (notificationHandler.getGame() == null && counter < 10) {
+                Thread.sleep(200);
+                counter++;
+            }
+
+            //现在假设拿到回执，就开始render
+            ChessGame returnedGame = notificationHandler.getGame();
+            if(returnedGame !=null){
+                localGame = returnedGame;
+                render = new ChessBoardRenderer(localGame.getBoard(), ChessGame.TeamColor.WHITE);
+                render.drawBoard();
+                state = State.Ingame;
+
+            }else {return "something went wrong";}
+
+
             return String.format("%s, you are observing the game now", visitorName);
 
             } catch (NumberFormatException e) {
                 throw new ResponseException(ResponseException.Code.BadRequest, "Expected a integer");
             }  catch (IndexOutOfBoundsException e){
                 throw new ResponseException(ResponseException.Code.BadRequest, "Out of range");
-            }catch (NullPointerException e){
+            }catch (NullPointerException | IOException e){
                 throw new ResponseException(ResponseException.Code.BadRequest, "Game list is empty /" +
                         " Game can not be joined");
+            } catch (InterruptedException e) {
+                throw new ResponseException(ResponseException.Code.BadRequest, "something went wrong!!");
             }
         }
         throw new ResponseException(ResponseException.Code.BadRequest, "Expected: observe <ID>");

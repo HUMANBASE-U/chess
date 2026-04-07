@@ -4,6 +4,7 @@ import chess.ChessMove;
 import com.google.gson.Gson;
 
 import jakarta.websocket.*;
+import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
@@ -12,8 +13,9 @@ import java.net.URISyntaxException;
 
 public class WebSocketFacade extends Endpoint {
 
+    private static final Gson GSON = new Gson();
     Session session;
-    NotificationHandler notificationHandler;
+    private final NotificationHandler notificationHandler;
 
     public WebSocketFacade(String url, NotificationHandler notificationHandler) throws client.ResponseException {
         try {
@@ -27,9 +29,9 @@ public class WebSocketFacade extends Endpoint {
             //set message handler
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
-                public void onMessage(String message) {
-                    ServerMessage msg = new Gson().fromJson(message, ServerMessage.class);
-                    notificationHandler.notify(notification);
+                public void onMessage(String json) {
+                    ServerMessage serverMessage = GSON.fromJson(json, ServerMessage.class);
+                    notificationHandler.onMessage(serverMessage);
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
@@ -41,18 +43,25 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void makeMove(ChessMove move){
-        
+    public void makeMove(UserGameCommand.CommandType type, String authToken, Integer gameId, ChessMove move) throws IOException {
+        UserGameCommand cmd = new UserGameCommand(
+                type,
+                authToken,
+                gameId,
+                move
+        );
+        String json = GSON.toJson(cmd);
+        session.getBasicRemote().sendText(json);
+
     }
 
-    public void enterPetShop(String visitorName) throws client.ResponseException {
-        try {
-            var action = new client.Action(Action.Type.ENTER, visitorName);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
-        } catch (IOException ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
-        }
+
+    public void connect(UserGameCommand.CommandType commandType, String auth, int gameId) throws IOException {
+        UserGameCommand cmd = new UserGameCommand(
+                commandType,
+                auth,
+                gameId);
+        String json = GSON.toJson(cmd);
+        session.getBasicRemote().sendText(json);
     }
-
-
 }
