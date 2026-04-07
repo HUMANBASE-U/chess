@@ -94,7 +94,6 @@ public class Client {
 
     public String drawBoard() throws InterruptedException {
         if(notificationHandler.getGame() != null) {
-            waitSec();
             //现在假设拿到回执，就开始render
             localGame = notificationHandler.getGame();
             render = new ChessBoardRenderer(localGame.getBoard(), teamColor);
@@ -126,7 +125,7 @@ public class Client {
                 ResponseException.Code.BadRequest, "Invalid!");
     }
 
-    public static ChessPosition parse(char file, int rank) throws ResponseException {
+    public static ChessPosition parse(char file, int rank) {
         char f = Character.toLowerCase(file);
         int col = f - 'a' + 1;
         int row = rank;
@@ -208,7 +207,6 @@ public class Client {
 
                 server.joinGame(new RR.JoinGameRequest(gameId, myColor, auth));
                 notificationHandler.setGame(null);
-                waitSec();
                 //同时进行Connect
                 socket.connect(UserGameCommand.CommandType.CONNECT,
                         auth,
@@ -245,7 +243,6 @@ public class Client {
                     auth,
                     gameId);
 
-            waitSec();
 
             //现在假设拿到回执，就开始render
             ChessGame returnedGame = notificationHandler.getGame();
@@ -267,8 +264,6 @@ public class Client {
             }catch (NullPointerException | IOException e){
                 throw new ResponseException(ResponseException.Code.BadRequest, "Game list is empty /" +
                         " Game can not be joined");
-            } catch (InterruptedException e) {
-                throw new ResponseException(ResponseException.Code.BadRequest, "something went wrong!!");
             }
         }
         throw new ResponseException(ResponseException.Code.BadRequest, "Expected: observe <ID>");
