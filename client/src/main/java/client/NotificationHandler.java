@@ -8,12 +8,17 @@ public class NotificationHandler {
     private ChessGame game;
     private String msg;
     private String errorMessage;
+    public int gameVersion = 1;
 
     public void onMessage(ServerMessage message){
         this.serverMessage = message;
 
         switch (serverMessage.getServerMessageType()){
-            case LOAD_GAME -> this.game = serverMessage.game;
+            case LOAD_GAME -> {
+                this.game = serverMessage.game;
+                gameVersion++;
+            }
+
             case NOTIFICATION -> this.msg = serverMessage.message;
             case ERROR -> this.errorMessage = serverMessage.errorMessage;
 
